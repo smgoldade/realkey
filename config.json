@@ -6,13 +6,10 @@
         "{FROM}": "{PATH}",
         "{TO}": "./realkey",
 
-        "{FROM}/__init__.py" : "{TO}/__init__.py",
         "{FROM}/realkey.py" : "{TO}/realkey.py",
 
-        "{FROM}/Common/__init__.py" : "{TO}/Common/__init__.py",
         "{FROM}/Common/key_cutters.py" : "{TO}/Common/key_cutters.py",
         "{FROM}/Common/key.py" : "{TO}/Common/key.py",
-       
         
         "{FROM}/ASSA/ASSA.py" : "{TO}/ASSA/ASSA.py",
 
