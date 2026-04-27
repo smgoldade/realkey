@@ -39,7 +39,7 @@
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
             camera.updateProjectionMatrix();
 
-            render.setSize(canvas.clientWidth / canvas.clientHeight);
+            renderer.setSize(canvas.clientWidth / canvas.clientHeight);
         })
 
         const controls = new OrbitControls(camera, renderer.domElement);
