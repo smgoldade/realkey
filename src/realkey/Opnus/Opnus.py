@@ -1,75 +1,98 @@
 from math import atan2, sqrt, pi
 
 from build123d import *
-from ocp_vscode import *
 
 from realkey.Common import key
 
 class Memolis(key.Key):
     MEMOLIS_KEY_WIDTH = 3.25*MM
     MEMOLIS_KEY_HEIGHT = 8.5*MM
-    MEMOLIS_KEY_SHOULDER_START = 31*MM
-    MEMOLIS_KEY_BOTTOM_START = 6.25*MM
+    MEMOLIS_KEY_X_DATUM = 31*MM
+    MEMOLIS_KEY_Y_DATUM = 6.25*MM
 
     MEMOLIS_R_CUT_SPACINGS = [i*3.75*MM + 7*MM for i in range(7)] # Right of keyway, with the arrow being at the top
-    MEMOLIS_L_CUT_SPACINGS = [i*3.75*MM + 9*MM for i in range(7)]
+    MEMOLIS_L_CUT_SPACINGS = [i*3.75*MM + 8.875*MM for i in range(7)]
     MEMOLIS_CUT_DEPTHS = [i*0.35*MM for i in range(6)]
 
     MEMOLIS_MAX_DEPTH = MEMOLIS_CUT_DEPTHS[-1]
     MEMOLIS_CUT_SURFACE_WIDTH = 1*MM
 
-
     @classmethod
     def name(cls) -> str:
         return "opnus_memolis"
+    
+    @classmethod
+    def display_name(cls) -> str:
+        return "Opnus Memolis"
 
     @classmethod
-    def profiles(cls) -> set[str]:
-        return {"memolis", "memolis_change"}
+    def profiles(cls) -> dict[str,str]:
+        return {"memolis": "Operator Key", "memolis_change" : "Change Key"}
 
     @classmethod
-    def keyways(cls) -> set[str]:
-        return {"memolis"}
+    def keyways(cls) -> dict[str,str]:
+        return {"memolis": "Memolis"}
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
         if profile not in cls.profiles(): raise ValueError("Invalid profile specified!")
         if keyway not in cls.keyways(): raise ValueError("Invalid keyway specified!")
 
-        paclock_svg = import_svg("resources/Opnus.svg", flip_y=False, label_by="inkscape:label")
+        opnus_svg = import_svg("resources/Opnus.svg", flip_y = False, label_by = "inkscape:label")
+        profile_face = opnus_svg.filter_by(lambda shape: shape.label == "#profile_" + profile)[0].faces()[0]
+        profile_face.position -= profile_face.bounding_box().min
 
-        blank_profile = paclock_svg.filter_by(lambda shape: shape.label == "#profile_" + profile)[0].faces()[0]
-        blank = extrude(blank_profile, cls.MEMOLIS_KEY_WIDTH)
-        blank.position -= blank.bounding_box().min
+        keyway_face = opnus_svg.filter_by(lambda shape: shape.label == "#keyway_" + keyway)[0]
+        keyway_face.position -= keyway_face.bounding_box().center()
+        keyway_face = keyway_face.mirror(Plane.XZ)
+        #keyway_face = keyway_face.rotate(Axis.Z, -90)
+        
+        with BuildPart() as memolis_blank:
+            with BuildSketch():
+                add(profile_face)
+            extrude(amount = cls.MEMOLIS_KEY_WIDTH)
+            
+            with BuildSketch(Plane.YZ.offset(cls.MEMOLIS_KEY_X_DATUM)) as keyway_cutter:
+                with Locations((cls.MEMOLIS_KEY_Y_DATUM + cls.MEMOLIS_KEY_HEIGHT / 2,cls.MEMOLIS_KEY_WIDTH / 2)):
+                    Rectangle(cls.MEMOLIS_KEY_HEIGHT, cls.MEMOLIS_KEY_WIDTH)
+                    add(keyway_face, mode = Mode.SUBTRACT)      
+            extrude(amount = 100*MM, mode = Mode.SUBTRACT)
 
-        keyway_shape = paclock_svg.filter_by(lambda shape: shape.label == "#keyway_"+keyway)[0]
-        keyway_shape = keyway_shape.mirror(Plane.XZ)
-        keyway_shape.position -= keyway_shape.bounding_box().min
+            chamfer(memolis_blank.edges().filter_by_position(Axis.X, 63.5, 65), 0.5*MM) 
 
-        keyway_cutter = Pos(-0.2*MM, -0.2*MM) * Rectangle(8.8*MM, 3.5*MM,0,(Align.MIN, Align.MIN))    
-        keyway_cutter -= keyway_shape
-        keyway_cutter = offset(Sketch(keyway_cutter), 0.005*MM)
-    
-        keyway_cutter = Sketch(Location((cls.MEMOLIS_KEY_SHOULDER_START,cls.MEMOLIS_KEY_BOTTOM_START,0),(90,90,0)) * keyway_cutter)
-        keyway_cutter = extrude(keyway_cutter, 40*MM)
-    
-        blank -= keyway_cutter
+            #secondary chamfer
+            tip_edges = memolis_blank.edges().filter_by_position(Axis.X, 62, 65).filter_by(Plane.XY).group_by(Axis.Z)             
+            secondary_edges = tip_edges[1] + tip_edges[2]            
+            chamfer(secondary_edges, 0.25*MM)
 
-        key_tip_edges = blank.edges().filter_by_position(Axis.X, 63.5,65)
-        blank = chamfer(key_tip_edges, 0.75*MM)
+            #key bitting surface chamfer
+            right_edges = memolis_blank.edges().filter_by_position(Axis.Y, cls.MEMOLIS_KEY_Y_DATUM-0.1,cls.MEMOLIS_KEY_Y_DATUM+0.1 ).filter_by(Plane.XZ).group_by(Axis.Z)
+            left_edges = memolis_blank.edges().filter_by_position(Axis.Y, cls.MEMOLIS_KEY_Y_DATUM+cls.MEMOLIS_KEY_HEIGHT-0.1,cls.MEMOLIS_KEY_Y_DATUM+cls.MEMOLIS_KEY_HEIGHT+0.1 ).filter_by(Plane.XZ).group_by(Axis.Z)
+            bitting_edges = right_edges[0] + right_edges[-1] + left_edges[0] + left_edges[-1]
+            
 
-        top_fillet_edges = select_edges(blank, [3,35,109,114]) if profile == "memolis" else select_edges(blank, [113,3,35,118])
-        blank = chamfer(top_fillet_edges, cls.MEMOLIS_CUT_SURFACE_WIDTH / sqrt(2))
-
-        tip_edges_2nd = select_edges(blank, [133,132,45,7]) if profile == "memolis" else select_edges(blank, [7,45,137,138]) 
-        blank = chamfer(tip_edges_2nd, 0.25*MM)
-
-        return Part(blank, "Opnus Memolis Key Blank")
+            chamfer(bitting_edges, cls.MEMOLIS_CUT_SURFACE_WIDTH / sqrt(2))
+        return Part(memolis_blank.part)
 
     @classmethod
     def cut_definition(cls) -> str:
-        return "There are 14 cuts from depths 0 to 5, cut 1 starts nearest to the bow on the right of keyway side (triangle on lock face is top of keyway), and alternate sides. Cuts 1 and 14 are always fixed for a given lock, but the rest can be changed with the appropriate change key and new key."
+        return "There are 14 cuts from maximum lift as 0 to minimum lift as 5. All right cuts come before all left cuts.<br/>" \
+        "Cuts 1 and 14 are always fixed for a given lock, but the rest can be changed with the appropriate change key and new key.<br/>" \
+        "On Memolis 2, a change key cut of 0 will disable that lever<br/><br/>" \
+        "<i>E.g. 40503325050251 will generate a key with 4050332 as right cuts, 5050251 as left cuts.</i>"
     
+    @classmethod
+    def validate_bitting(cls, profile: str, keyway: str, bitting: str):
+        if not bitting.isnumeric():
+            raise ValueError("Only numeric cuts are allowed")
+        
+        if len(bitting) > 14:
+            raise ValueError("Maximum supported cuts for Memolis is 14")
+
+        for cut in bitting:
+            if int(cut) < 0 or int(cut) > 5:
+                raise ValueError("Cut depths must be from 0 to 5")
+            
     @classmethod
     def key_cutter(cls):
         base = RectangleRounded(1.5*MM, 1.25*MM, 0.624*MM)
@@ -81,43 +104,83 @@ class Memolis(key.Key):
         side = extrude(Sketch(side), cls.MEMOLIS_CUT_SURFACE_WIDTH)
         side_bottom = side.faces().filter_by_position(Axis.Z,-1,0.1)[0]       
         top = Pos(0,0,cls.MEMOLIS_MAX_DEPTH) * make_hull(Rectangle(6.5*MM, cls.MEMOLIS_CUT_SURFACE_WIDTH).edges() + Rectangle(cls.MEMOLIS_CUT_SURFACE_WIDTH, 2.5*MM).edges())
+        top_extra = extrude(Sketch(top), 10*MM)
 
         cutter = loft(side_bottom + top)
         cutter += base
+        cutter += top_extra
         return cutter
+        #with BuildPart() as cutter:
+        #    with BuildSketch() as base:
+        #        RectangleRounded(1.5*MM, 1.25*MM, 0.624*MM)
+        #    extrude(amount = cls.MEMOLIS_MAX_DEPTH)
+
+        #    with BuildSketch() as bottom:
+        #        Rectangle(1.5*MM, 1*MM)
+
+        #    with BuildSketch(Plane.XY.offset(cls.MEMOLIS_MAX_DEPTH)) as top:
+        #        with BuildLine() as top_line:
+        #            Polyline (
+        #                (cls.MEMOLIS_CUT_SURFACE_WIDTH / 2, -2.5*MM / 2),
+        #                (cls.MEMOLIS_CUT_SURFACE_WIDTH / 2, 2.5*MM / 2),
+        #                (-cls.MEMOLIS_CUT_SURFACE_WIDTH / 2, 2.5*MM / 2),
+        #                (-cls.MEMOLIS_CUT_SURFACE_WIDTH / 2, -2.5*MM / 2),
+        #                (cls.MEMOLIS_CUT_SURFACE_WIDTH / 2, -2.5*MM / 2),
+        #            )
+        #            Polyline(
+        #                (6.25*MM / 2,cls.MEMOLIS_CUT_SURFACE_WIDTH / 2),
+        #                (6.25*MM / 2,-cls.MEMOLIS_CUT_SURFACE_WIDTH / 2),
+        #                (-6.25*MM / 2,-cls.MEMOLIS_CUT_SURFACE_WIDTH / 2),
+        #                (-6.25*MM / 2,cls.MEMOLIS_CUT_SURFACE_WIDTH / 2),
+        #                (6.25*MM / 2,cls.MEMOLIS_CUT_SURFACE_WIDTH / 2),
+        #            )
+        #        make_hull()
+        #    loft()
+        #return cutter.part
     
     @classmethod
-    def key(cls, profile: str, keyway: str, cuts: str) -> Part:
-        a_key = cls.blank(profile, keyway)
-        cutter = cls.key_cutter()
-        mirror_plane_1 = Plane.XZ.offset(-cls.MEMOLIS_KEY_BOTTOM_START - cls.MEMOLIS_KEY_HEIGHT/2)
-        mirror_plane_2 = Plane.XY.offset(cls.MEMOLIS_KEY_WIDTH/2)
+    def key(cls, profile: str, keyway: str, bitting: str) -> Part:
+        cls.validate_bitting(profile, keyway, bitting)
 
-        for i, cut in enumerate(cuts):
-            is_right_side = (i % 2 == 0)
-            depth_index = int(cut)
-            cut_index = i//2
+        def cutter_for_side(cuts: str, is_right_side: bool): 
+            cutter = Part()
+            mirror_plane_1 = Plane.XZ.offset(-cls.MEMOLIS_KEY_Y_DATUM - cls.MEMOLIS_KEY_HEIGHT/2)
+            mirror_plane_2 = Plane.XY.offset(cls.MEMOLIS_KEY_WIDTH/2)
+            for i, cut in enumerate(cuts):
+                depth_index = int(cut)
 
-            cut_x = cls.MEMOLIS_R_CUT_SPACINGS[cut_index] if is_right_side else cls.MEMOLIS_L_CUT_SPACINGS[cut_index]
-            cut_x += cls.MEMOLIS_KEY_SHOULDER_START
-            cut_depth = cls.MEMOLIS_CUT_DEPTHS[depth_index]
-            rotation = 45 if is_right_side else -45
+                cut_x = cls.MEMOLIS_R_CUT_SPACINGS[i] if is_right_side else cls.MEMOLIS_L_CUT_SPACINGS[i]
+                cut_x += cls.MEMOLIS_KEY_X_DATUM
+                cut_depth = cls.MEMOLIS_CUT_DEPTHS[depth_index]
+                rotation = 45 if is_right_side else -45
 
-            cut_y = cls.MEMOLIS_KEY_BOTTOM_START
-            if not is_right_side:
-                cut_y += cls.MEMOLIS_KEY_HEIGHT
+                cut_y = cls.MEMOLIS_KEY_Y_DATUM
+                if not is_right_side:
+                    cut_y += cls.MEMOLIS_KEY_HEIGHT
 
-            cutter_tool = Pos(0,0,-cut_depth-cls.MEMOLIS_CUT_SURFACE_WIDTH/2) * cutter
-            cutter_tool = Location((cut_x,cut_y,cls.MEMOLIS_KEY_WIDTH),(rotation,0,0)) * cutter_tool
-            
-            a_key -= cutter_tool
-            cutter_tool = mirror(Part() + cutter_tool, mirror_plane_1)
-            cutter_tool = mirror(cutter_tool, mirror_plane_2)
-            a_key -= cutter_tool
-        return Part(a_key, "Opnus Memolis Key")
+                cutter_tool = cls.key_cutter()
+                if cutter_tool == None: return Part()
+                cutter_tool = Pos(0,0,-cut_depth-cls.MEMOLIS_CUT_SURFACE_WIDTH/2) * cutter_tool
+                cutter_tool = Location((cut_x,cut_y,cls.MEMOLIS_KEY_WIDTH),(rotation,0,0)) * cutter_tool
+                cutter += cutter_tool
+                
+                cutter_tool2 = mirror(Part() + cutter_tool, mirror_plane_1)
+                cutter_tool2 = mirror(cutter_tool2, mirror_plane_2)
+                cutter += cutter_tool2
+            return cutter
+
+        right_cuts = bitting[:int(len(bitting)/2)]
+        left_cuts = bitting[int(len(bitting)/2):]
+
+        key = cls.blank(profile, keyway)
+        cutter_right = cutter_for_side(right_cuts, True) 
+        cutter_left =  cutter_for_side(left_cuts, False)  
+
+        return Part(key - (cutter_right + cutter_left))
 
 if __name__ == '__main__':
     from ocp_vscode import *
-    a_key = Memolis.key("memolis_change", "memolis", "45005500323521")
-    #export_step(a_key, "memolis_change_key.step")
+    #blank = Memolis.blank("memolis_change", "memolis")
+    key = Memolis.key("memolis", "memolis", "40503325050251")
+    #export_step(key, "memolis_change_key.step")
     show_all()

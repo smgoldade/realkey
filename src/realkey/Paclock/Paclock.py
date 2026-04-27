@@ -13,14 +13,18 @@ class PR1(key.Key):
     @classmethod
     def name(cls) -> str:
         return "paclock_pr1"
+    
+    @classmethod
+    def display_name(cls) -> str:
+        return "Paclock PR1"
 
     @classmethod
-    def profiles(cls) -> set[str]:
-        return {"pr1", "pro"}
+    def profiles(cls) -> dict[str, str]:
+        return {"pr1": "PR1 6-pin", "pro" : "PRO 7-pin"}
 
     @classmethod
-    def keyways(cls) -> set[str]:
-        return {"pr1"}
+    def keyways(cls) -> dict[str,str]:
+        return {"pr1": "PR1"}
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
@@ -53,14 +57,33 @@ class PR1(key.Key):
 
     @classmethod
     def cut_definition(cls) -> str:
-        return "Key cuts are defined from highest to lowest as 1 through 6"
+        return "Key cuts are defined from maximum lift as 1 to minimum lift as 6<br/><br/><i>E.g. 6212121 for a PRO profile.</i>"
 
     @classmethod
-    def key(cls, profile: str, keyway: str, cuts: str) -> Part:
+    def validate_bitting(cls, profile: str, keyway: str, bitting: str):
+        if not bitting.isnumeric():
+            raise ValueError("Only numeric cuts are allowed")
+        
+        match profile:
+            case "PR1":
+                if len(bitting) > 6:
+                    raise ValueError("Maximum supported cuts for PR1 profile is 6")
+            case "PRO":
+                if len(bitting) > 7:
+                    raise ValueError("Maximum supported cuts for PRO profile is 7")
+                
+        for cut in bitting:
+            if int(cut) < 1 or int(cut) > 6:
+                raise ValueError("Cut depths must be from 1 to 6")
+
+    @classmethod
+    def key(cls, profile: str, keyway: str, bitting: str) -> Part:
+        cls.validate_bitting(profile, keyway, bitting)
+
         a_key = cls.blank(profile, keyway)
         cutter = key_cutters.hpc_cw1011()
 
-        for i, cut in enumerate(cuts):
+        for i, cut in enumerate(bitting):
             cut_x = cls.PR1_KEY_SHOULDER_START + cls.PR1_KEY_CUT_SPACINGS[i]
             cut_y = cls.PR1_KEY_BOTTOM_START + cls.PR1_KEY_CUT_DEPTHS[int(cut)-1]
             

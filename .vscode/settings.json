@@ -1,0 +1,6 @@
+{
+    "python.analysis.stubPath": "src/stubs/pyscript-stubs/src/pyscript-stubs",
+    "liveServer.settings.headers": {
+        "Access-Control-Allow-Origin": "micropython.org pypi.anaconda.org"
+    }
+}

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>realkey - 3D Key Model Generation</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">   
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" type="text/css"/>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2026.3.1/core.css" type="text/css"/>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.184.0/+esm",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module" src="https://pyscript.net/releases/2026.3.1/core.js"></script>
+    <script type="module" id="key_render">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+
+        const canvas = document.querySelector("#canvas");
+        const scene = new THREE.Scene();
+        const sceneGroup = new THREE.Group();
+        const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true});
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setAnimationLoop(animate);
+        renderer.setClearColor(0x222222);
+
+        window.addEventListener("resize", ()=> {
+            camera.aspect = canvas.clientWidth / canvas.clientHeight;
+            camera.updateProjectionMatrix();
+
+            render.setSize(canvas.clientWidth / canvas.clientHeight);
+        })
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.autoRotate = true;
+        controls.cursorStyle = "grab";
+        controls.enableDamping = true;
+
+        var geometry = new THREE.BoxGeometry(25,25,25);
+        var brassMaterial = new THREE.MeshPhongMaterial({
+            color: 0xe3bd7a,
+            specular: 0xe3bd7a,
+            shininess: 100
+        });
+        var key = new THREE.Mesh(geometry, brassMaterial);
+        sceneGroup.add(key);
+        
+        const light = new THREE.PointLight(0xFFFFFF,2,0,0);
+        light.position.set(0,0,50);
+        camera.add(light);
+        const light2 = new THREE.PointLight(0xFFFFFF,1,0,0);
+        light2.position.set(0,0,-100);
+        camera.add(light2);
+
+        sceneGroup.add(camera);
+
+        scene.add(sceneGroup);
+        camera.position.z = 50;
+
+        var lastTime = 0;
+
+        function animate(time) {
+            var deltaTime = (time - lastTime) / 1000;
+            lastTime = time;
+
+            controls.update(deltaTime);
+            renderer.render(scene, camera);          
+        }
+
+        async function internal_load_key(key_file) {
+            sceneGroup.remove(key);
+            geometry.dispose();
+            brassMaterial.dispose();
+
+            const stlLoader = new STLLoader();
+            geometry = await stlLoader.loadAsync(key_file);
+            brassMaterial = new THREE.MeshPhongMaterial({
+                color: 0xe3bd7a,
+                specular: 0xe3bd7a,
+                shininess: 30
+            });
+            key = new THREE.Mesh(geometry, brassMaterial);
+
+            // get object bounds
+            var boundingBox = new THREE.Box3().setFromObject(key);
+            var center = new THREE.Vector3();
+            boundingBox.getCenter(center);
+
+            var size = Math.sqrt(center.x*center.x + center.y*center.y + center.z*center.z)
+
+            key.translateX(-center.x);
+            key.translateY(-center.y);
+            key.pivot = center;
+            key.rotation.z = -Math.PI/2;
+
+            camera.position.z = size*1.5;
+            sceneGroup.add(key);
+        }
+
+        window.access_key = key;
+        window.load_key = internal_load_key;
+    </script>
+
+    <style>
+        a {
+            color: #ccc;
+        }
+
+        body {
+            margin: 1em auto;
+            padding: 0.67em;
+            max-width: 75em;
+
+            background: #040005;
+            font-family: 'Libre Baskerville', serif;
+            color: #999;
+        }
+
+        button {
+            display: inline-block;
+            cursor: pointer;
+
+            padding: 0 6px;
+            border: none;
+            border-radius: 5px;
+            min-height: 36px;
+            min-width: 88px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            color: #ccc
+        }
+
+        button[disabled] {
+            color: rgba(192,192,192, 0.26);
+            background-color: transparent;
+            cursor: default;
+            pointer-events: none;
+        } 
+        
+        h1 {
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        input, select {
+            background-color: #333;
+            font-style: normal;
+            color: #ccc;
+
+            border-radius: 4px;
+        }
+
+        input[disabled], select[disabled] {
+            color: #4a4a4a;
+            font-style: italic;
+        }
+
+        .container {
+            background-color: #222;
+            padding: 1em;
+        }
+
+        .green-button {
+            background-color: #080;
+        }
+
+        .green-button:hover {
+            background-color: #070;
+        }
+
+        .red-button {
+            background-color: #800;
+        }
+
+        .red-button:hover {
+            background-color: #700;
+        }
+
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Dim effect */
+            z-index: 9999; /* Sit on top */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #status {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.9);
+            color: rgba(127,127,127,0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+
+        #main {
+            align-self: center;
+            display: flex;
+            justify-content: space-between;
+            max-width: 70em;
+        }
+
+        #header {
+            width: 100%
+        }
+
+        #left-sidebar {
+            width: 40%;
+
+            padding: 0.5em;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        #right {
+            width: 60%;
+
+            padding: 0.5em;
+            color: #4a4a4a;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+
+            font-style: italic;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items:center;
+        }  
+        
+        #canvas {
+            display: block;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <script type="py" src="main.py" config="config.json"></script>
+    
+    <div class="container">
+        <div id="loader">
+            <div id="status">
+                Loading Python...
+            </div>
+        </div>
+        <div id="header">
+            <h1>realkey <a href="https://github.com/smgoldade/realkey" style="vertical-align: middle;"><i class="fa-brands fa-github"></i></a></h1>
+        </div>
+        <div id="main">
+            <div id="left-sidebar">
+                <p>
+                    <label for="key-select">Key</label><br/>
+                    <select id="key-select" disabled>
+                        <option>No keys loaded...</option>
+                    </select>
+                </p>
+                <p>
+                    <label for="profile-select">Profile</label><br/>
+                    <select id="profile-select" disabled>
+                        <option>No profiles loaded...</option>
+                    </select>
+                </p>
+                <p>
+                    <label for="keyway-select">Keyway</label><br/>
+                    <select id="keyway-select" disabled>
+                        <option>No keyways loaded...</option>
+                    </select>
+                </p>
+                <p>
+                    <span id="bitting-instructions"></span>
+                </p>
+                <p>
+                    <label for="bitting">Bitting:</label><br/>
+                    <input id="bitting" class="selector loaded_selector" type="text" disabled/>
+                </p>
+                <div id="info"></div>
+                <p>
+                    <button id="generate" class="green-button" disabled>Generate</button>
+                    <input id="preview" type="checkbox" checked disabled>Generate preview</input>
+                    <br/>
+                    <span style="font-size: 10px; color:#4a4a4a">Generation may take some time, click once and wait, its still running.</span>
+                </p>
+                <p>
+                    <button id="save-stl" class="red-button" disabled><i class="fa-solid fa-download"></i> STL</button>
+                    <button id="save-step" class="red-button" disabled><i class="fa-solid fa-download"></i> STEP</button>
+                </p>
+            </div>
+            <div id="right">
+                <canvas id="canvas"></canvas>
+                <span style="font-size: 10px; color:#4a4a4a">Left click to orbit, right click to pan, scrollwheel to zoom</span>
+            </div>
+        </div>
+        </div>
+
+    </div>
+</body>
+</html>

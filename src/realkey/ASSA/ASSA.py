@@ -1,14 +1,12 @@
-from math import copysign
 from build123d import *
-from ocp_vscode import *
 
-from realkey.Common import key_cutters, key
+from realkey.Common import key
 
 class Desmo(key.Key):
     DESMO_KEY_BLADE_HEIGHT = 9.5*MM
     DESMO_KEY_WIDTH = 3*MM
-    DESMO_KEY_SHOULDER_START = 27.725*MM
-    DESMO_KEY_BOTTOM = 22*MM
+    DESMO_KEY_X_DATUM = 27.725*MM
+    DESMO_KEY_Y_DATUM = 22*MM
     DESMO_KEY_TOP = 16.75*MM
 
     DESMO_CUT_SPACINGS = [i*3.5*MM + 4.5*MM for i in range(10)]
@@ -22,14 +20,18 @@ class Desmo(key.Key):
     @classmethod
     def name(cls) -> str:
         return "assa_desmo"
+    
+    @classmethod
+    def display_name(cls) -> str:
+        return "ASSA Desmo"
 
     @classmethod
-    def profiles(cls) -> set[str]:
-        return {"desmo_6pin", "desmo_8pin", "desmo_10pin"}
+    def profiles(cls) -> dict[str, str]:
+        return {"6pin" : "6-Pin", "8pin" : "8-Pin", "10pin" : "10-Pin"}
 
     @classmethod
-    def keyways(cls) -> set[str]:
-        return {"desmo"}
+    def keyways(cls) -> dict[str,str]:
+        return {"desmo": "Desmo"}
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
@@ -37,7 +39,7 @@ class Desmo(key.Key):
         if keyway not in cls.keyways(): raise ValueError("Invalid keyway specified!")
 
         assa_svg = import_svg("resources/ASSA.svg", flip_y=False, label_by="inkscape:label")
-        profile_face = assa_svg.filter_by(lambda shape: shape.label == "#profile_" + profile)[0].faces()[0]
+        profile_face = assa_svg.filter_by(lambda shape: shape.label == "#profile_desmo_" + profile)[0].faces()[0]
         profile_face.position -= profile_face.bounding_box().min
 
         keyway_face = assa_svg.filter_by(lambda shape: shape.label == "#keyway_"+keyway)[0]
@@ -49,40 +51,49 @@ class Desmo(key.Key):
                 add(profile_face)
             extrude(amount = cls.DESMO_KEY_WIDTH)
             
-            with BuildSketch(Plane.YZ.offset(cls.DESMO_KEY_SHOULDER_START)):
-                with Locations((cls.DESMO_KEY_BOTTOM - cls.DESMO_KEY_BLADE_HEIGHT/2,cls.DESMO_KEY_WIDTH/2)):
-                    Rectangle(cls.DESMO_KEY_BLADE_HEIGHT+5.0*MM, cls.DESMO_KEY_WIDTH)
+            with BuildSketch(Plane.YZ.offset(cls.DESMO_KEY_X_DATUM)):
+                with Locations((cls.DESMO_KEY_Y_DATUM - cls.DESMO_KEY_BLADE_HEIGHT / 2,cls.DESMO_KEY_WIDTH / 2)):
+                    Rectangle(cls.DESMO_KEY_BLADE_HEIGHT + 5.0*MM, cls.DESMO_KEY_WIDTH)
                     add(keyway_face, mode = Mode.SUBTRACT)      
             extrude(amount = 50*MM, mode = Mode.SUBTRACT)
         return Part(desmo_blank.part)
 
     @classmethod
     def cut_definition(cls) -> str:
-        return "Key cuts are defined from highest to lowest as 1 through 6, all right side cuts come before all left side cuts."
+        return "Cuts proceed from right side bow to tip, then left side bow to tip, with 1 being the maximum lift and 6 being the minimum lift<br/><br/><i>E.g. 145362 represents 145 on the right, 362 on the left</i>"
 
     @classmethod
-    def key(cls, profile: str, keyway: str, cuts: str) -> Part:
-        if len(cuts) % 2 != 0:
-            raise ValueError("Number of cuts must be even")
+    def validate_bitting(cls, profile: str, keyway: str, bitting: str):
+        if not bitting.isnumeric():
+            raise ValueError("Only numeric cuts are allowed")
         match profile:
-            case "desmo_6pin":
-                if len(cuts) > 6:
-                    raise ValueError("6 pin profile only supports 6 cuts")
-            case "desmo_8pin":
-                if len(cuts) > 8:
-                    raise ValueError("8 pin profile only supports 8 cuts")
-            case "desmo_10pin":
-                if len(cuts) > 6:
-                    raise ValueError("10 pin profile only supports 10 cuts")
+            case "6pin":
+                if len(bitting) > 6:
+                    raise ValueError("6 pin profile only supports a maximum of 6 cuts")
+            case "8pin":
+                if len(bitting) > 8:
+                    raise ValueError("8 pin profile only supports a maximum of 8 cuts")
+            case "10pin":
+                if len(bitting) > 10:
+                    raise ValueError("10 pin profile only supports a maximum of 10 cuts")
+        if len(bitting) % 2 != 0:
+            raise ValueError("Number of cuts must be even")
+                
+        for cut in bitting:
+            if int(cut) < 1 or int(cut) > 6:
+                raise ValueError("Cut depths must be from 1 to 6")
 
+    @classmethod
+    def key(cls, profile: str, keyway: str, bitting: str) -> Part:
+        cls.validate_bitting(profile, keyway, bitting)
 
         desmo_blank = cls.blank(profile, keyway)
                 
         right_track = [(0.0, 0.0)] * 18
         left_track =  [(0.0, 0.0)] * 18
         
-        right_cuts = cuts[:int(len(cuts)/2)]
-        left_cuts = cuts[int(len(cuts)/2):]
+        right_cuts = bitting[:int(len(bitting)/2)]
+        left_cuts = bitting[int(len(bitting)/2):]
 
         def calculate_tracks(track: list[tuple[float,float]], cuts : str):
             for i, cut in enumerate(cuts):
@@ -91,15 +102,15 @@ class Desmo(key.Key):
                 cut_index = i if i < 2 else i + 1
 
                 cut_x = cls.DESMO_CUT_SPACINGS[cut_index]
-                cut_x += cls.DESMO_KEY_SHOULDER_START
+                cut_x += cls.DESMO_KEY_X_DATUM
 
-                cut_y = cls.DESMO_KEY_BOTTOM
+                cut_y = cls.DESMO_KEY_Y_DATUM
                 cut_y -= cls.DESMO_CUT_DEPTHS[depth_index] + cls.DESMO_PIN_HEIGHT / 2 # Cuts are "centered" in the track, measurements were taken to the bottom of track
 
                 # The cut height for the notch appears to match the next cut on ASSA cut keys
                 if i == 2:
-                    track[4] = (cls.DESMO_KEY_SHOULDER_START + cls.DESMO_CUT_SPACINGS[2] - cls.DESMO_PIN_DIAMETER / 2, cut_y)
-                    track[5] = (cls.DESMO_KEY_SHOULDER_START + cls.DESMO_CUT_SPACINGS[2] + cls.DESMO_PIN_DIAMETER / 2, cut_y)
+                    track[4] = (cls.DESMO_KEY_X_DATUM + cls.DESMO_CUT_SPACINGS[2] - cls.DESMO_PIN_DIAMETER / 2, cut_y)
+                    track[5] = (cls.DESMO_KEY_X_DATUM + cls.DESMO_CUT_SPACINGS[2] + cls.DESMO_PIN_DIAMETER / 2, cut_y)
 
                 track[cut_index*2] = (cut_x - cls.DESMO_PIN_DIAMETER / 2, cut_y)
                 track[cut_index*2+1] = (cut_x + cls.DESMO_PIN_DIAMETER / 2, cut_y)
@@ -108,8 +119,8 @@ class Desmo(key.Key):
                 if i == len(cuts)-1:
                     while cut_index < 8:
                         cut_index += 1
-                        track[cut_index*2] = (cls.DESMO_CUT_SPACINGS[cut_index] + cls.DESMO_KEY_SHOULDER_START - cls.DESMO_PIN_DIAMETER / 2, cut_y)
-                        track[cut_index*2+1] = (cls.DESMO_CUT_SPACINGS[cut_index] + cls.DESMO_KEY_SHOULDER_START  + cls.DESMO_PIN_DIAMETER / 2, cut_y)
+                        track[cut_index*2] = (cls.DESMO_CUT_SPACINGS[cut_index] + cls.DESMO_KEY_X_DATUM - cls.DESMO_PIN_DIAMETER / 2, cut_y)
+                        track[cut_index*2+1] = (cls.DESMO_CUT_SPACINGS[cut_index] + cls.DESMO_KEY_X_DATUM  + cls.DESMO_PIN_DIAMETER / 2, cut_y)
         
         calculate_tracks(right_track, right_cuts)
         calculate_tracks(left_track, left_cuts)
@@ -199,9 +210,9 @@ class Desmo(key.Key):
             # The tip cut on Desmo follows the tip and goes all the way to the track equally
             tip_x = 55*MM
             match profile:
-                case "desmo_8pin":
+                case "8pin":
                     tip_x = 51.5*MM
-                case "desmo_6pin":
+                case "6pin":
                     tip_x = 48*MM
 
             tip_edges = desmo_blank.edges().filter_by_position(Axis.X, tip_x, 100)
@@ -218,11 +229,11 @@ class Desmo(key.Key):
                     is_left = True if v_0.Z > cls.DESMO_KEY_WIDTH else False
                     z_off = 0.375*MM if is_left else -0.375*MM
                            
-                    if v_0n[1] > cls.DESMO_KEY_TOP and v_0n[1] < cls.DESMO_KEY_BOTTOM:
+                    if v_0n[1] > cls.DESMO_KEY_TOP and v_0n[1] < cls.DESMO_KEY_Y_DATUM:
                         v_0n[1] = left_track[-1][1] if is_left else right_track[-1][1]
                         v_1n[0] += cls.DESMO_PIN_DIAMETER
 
-                    if v_1n[1] > cls.DESMO_KEY_TOP and v_1n[1] < cls.DESMO_KEY_BOTTOM:
+                    if v_1n[1] > cls.DESMO_KEY_TOP and v_1n[1] < cls.DESMO_KEY_Y_DATUM:
                         v_1n[1] = left_track[-1][1] if is_left else right_track[-1][1]
                         v_0n[0] += cls.DESMO_PIN_DIAMETER
                                        
@@ -239,21 +250,15 @@ class Desmo(key.Key):
                 Polyline(right_track)
             with BuildLine(Plane.XY) as spacing:
                 for key_cut in cls.DESMO_CUT_SPACINGS:
-                    Line((cls.DESMO_KEY_SHOULDER_START + key_cut,0),(cls.DESMO_KEY_SHOULDER_START + key_cut,40))
-            show_object(left_track_cut)
-            show_object(right_track_cut)
-            show_object(spacing)
-            show_object(desmo_key)
-            
+                    Line((cls.DESMO_KEY_X_DATUM + key_cut,0),(cls.DESMO_KEY_X_DATUM + key_cut,40))            
         return Part(desmo_key.part)
  
 
 if __name__ == '__main__':
     from ocp_vscode import *
-    #desmo_blank = Desmo.blank("desmo_8pin", "desmo")
-    desmo_key = Desmo.key("desmo_8pin", "desmo", "24421322")
-    #desmo_key = Desmo.key("desmo_6pin", "desmo", "632145")
+    #desmo_blank = Desmo.blank("8pin", "desmo")
+    desmo_key = Desmo.key("8pin", "desmo", "24421322")
+    #desmo_key = Desmo.key("6pin", "desmo", "632145")
     export_step(desmo_key, "desmo_key.step")
-    #export_step(desmo_key, "100percentsatisfaction.step")
     #export_step(blank, "desmo_blank.step")
     #show_all()

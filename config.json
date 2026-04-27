@@ -1,0 +1,27 @@
+{
+    "name": "realkey",
+    "packages": ["micropip"],
+    "files": {
+        "{PATH}": "./src/realkey",
+        "{FROM}": "{PATH}",
+        "{TO}": "./realkey",
+
+        "{FROM}/__init__.py" : "{TO}/__init__.py",
+        "{FROM}/realkey.py" : "{TO}/realkey.py",
+
+        "{FROM}/Common/__init__.py" : "{TO}/Common/__init__.py",
+        "{FROM}/Common/key_cutters.py" : "{TO}/Common/key_cutters.py",
+        "{FROM}/Common/key.py" : "{TO}/Common/key.py",
+       
+        
+        "{FROM}/ASSA/ASSA.py" : "{TO}/ASSA/ASSA.py",
+
+        "{FROM}/Opnus/Opnus.py" : "{TO}/Opnus/Opnus.py",
+
+        "{FROM}/Paclock/Paclock.py" : "{TO}/Paclock/Paclock.py",
+
+        "resources/ASSA.svg" : "resources/ASSA.svg",
+        "resources/Opnus.svg" : "resources/Opnus.svg",
+        "resources/Paclock.svg" : "resources/Paclock.svg"
+    }
+}
