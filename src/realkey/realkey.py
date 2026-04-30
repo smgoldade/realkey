@@ -5,6 +5,7 @@ from js import URL, Blob, load_key
 
 from realkey.Common import key
 from realkey.ASSA import ASSA
+from realkey.MIWA import MIWA
 from realkey.Opnus import Opnus
 from realkey.Paclock import Paclock
 from typing import Callable
