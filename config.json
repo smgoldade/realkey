@@ -13,11 +13,14 @@
         
         "{FROM}/ASSA/ASSA.py" : "{TO}/ASSA/ASSA.py",
 
+        "{FROM}/MIWA/MIWA.py" : "{TO}/MIWA/MIWA.py",
+
         "{FROM}/Opnus/Opnus.py" : "{TO}/Opnus/Opnus.py",
 
         "{FROM}/Paclock/Paclock.py" : "{TO}/Paclock/Paclock.py",
 
         "resources/ASSA.svg" : "resources/ASSA.svg",
+        "resources/MIWA.svg" : "resources/MIWA.svg",
         "resources/Opnus.svg" : "resources/Opnus.svg",
         "resources/Paclock.svg" : "resources/Paclock.svg"
     }

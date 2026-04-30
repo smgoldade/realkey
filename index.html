@@ -78,7 +78,7 @@
             renderer.render(scene, camera);          
         }
 
-        async function internal_load_key(key_file) {
+        globalThis.load_key = async function (key_file) {
             sceneGroup.remove(key);
             geometry.dispose();
             brassMaterial.dispose();
@@ -107,9 +107,6 @@
             camera.position.z = size*1.5;
             sceneGroup.add(key);
         }
-
-        window.access_key = key;
-        window.load_key = internal_load_key;
     </script>
 
     <style>
@@ -244,12 +241,13 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items:center;
+            align-items: stretch;
         }  
         
         #canvas {
-            display: block;
             width: 100%;
+
+            min-height: 30em;
         }
     </style>
 </head>
@@ -305,8 +303,13 @@
                 </p>
             </div>
             <div id="right">
-                <canvas id="canvas"></canvas>
-                <span style="font-size: 10px; color:#4a4a4a">Left click to orbit, right click to pan, scrollwheel to zoom</span>
+                <div>
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div>
+                    <span style="height: 15px; font-size: 10px; color:#4a4a4a">Left click to orbit, right click to pan, scrollwheel to zoom</span>
+                </div>
             </div>
         </div>
         </div>

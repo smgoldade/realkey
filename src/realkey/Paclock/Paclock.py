@@ -5,8 +5,8 @@ from realkey.Common import key_cutters, key
 class PR1(key.Key):
     PR1_KEY_WIDTH = 2*MM
     PR1_KEY_HEIGHT = 1*IN
-    PR1_KEY_SHOULDER_START = 36*MM
-    PR1_KEY_BOTTOM_START = 9*MM
+    PR1_KEY_X_DATUM = 36*MM
+    PR1_KEY_Y_DATUM = 9*MM
     PR1_KEY_CUT_SPACINGS = [i*0.1375*IN + 0.145*IN for i in range(7)]
     PR1_KEY_CUT_DEPTHS = [i*IN for i in [0.2840,0.2684,0.2450,0.2215,0.1981,0.1747]]
 
@@ -48,7 +48,7 @@ class PR1(key.Key):
         keyway_cutter -= keyway_shape
         keyway_cutter = offset(keyway_cutter, 0.005*MM)
     
-        keyway_cutter = Sketch(Location((cls.PR1_KEY_SHOULDER_START,cls.PR1_KEY_BOTTOM_START,cls.PR1_KEY_WIDTH),(0,90,0)) * keyway_cutter)
+        keyway_cutter = Sketch(Location((cls.PR1_KEY_X_DATUM,cls.PR1_KEY_Y_DATUM,cls.PR1_KEY_WIDTH),(0,90,0)) * keyway_cutter)
         keyway_cutter = extrude(keyway_cutter, 30*MM)
     
         blank -= keyway_cutter
@@ -57,7 +57,7 @@ class PR1(key.Key):
 
     @classmethod
     def cut_definition(cls) -> str:
-        return "Key cuts are defined from maximum lift as 1 to minimum lift as 6<br/><br/><i>E.g. 6212121 for a PRO profile.</i>"
+        return "Key cuts are defined from bow to tip with maximum lift as 1 and minimum lift as 6<br/><br/><i>E.g. 6212121 for a PRO profile.</i>"
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
@@ -84,8 +84,8 @@ class PR1(key.Key):
         cutter = key_cutters.hpc_cw1011()
 
         for i, cut in enumerate(bitting):
-            cut_x = cls.PR1_KEY_SHOULDER_START + cls.PR1_KEY_CUT_SPACINGS[i]
-            cut_y = cls.PR1_KEY_BOTTOM_START + cls.PR1_KEY_CUT_DEPTHS[int(cut)-1]
+            cut_x = cls.PR1_KEY_X_DATUM + cls.PR1_KEY_CUT_SPACINGS[i]
+            cut_y = cls.PR1_KEY_Y_DATUM + cls.PR1_KEY_CUT_DEPTHS[int(cut)-1]
             
             # Cuts are .065 inches width, so we make 2 cuts pre and post to widen to .065 inches
             a_key -= Pos(cut_x-0.010*IN, cut_y, 0) * cutter
