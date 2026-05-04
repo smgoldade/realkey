@@ -15,7 +15,6 @@ class Desmo(key.Key):
     DESMO_PIN_DIAMETER = 3*MM
     DESMO_PIN_HEIGHT = 1*MM
     DESMO_TRACK_TOLERANCE = 0.75*MM
-    DESMO_TRACK_SOFTENING = 0.55
 
     @classmethod
     def name(cls) -> str:
@@ -60,7 +59,8 @@ class Desmo(key.Key):
 
     @classmethod
     def cut_definition(cls) -> str:
-        return "Cuts proceed from right side bow to tip, then left side bow to tip, with 1 being the maximum lift and 6 being the minimum lift<br/><br/><i>E.g. 145362 represents 145 on the right, 362 on the left</i>"
+        return "Cuts proceed from right side bow to tip, then left side bow to tip, with 1 being the maximum lift and 6 being the minimum lift<br><br>" \
+        "<i>E.g. 145362 represents 145 on the right, 362 on the left</i>"
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
@@ -131,7 +131,7 @@ class Desmo(key.Key):
                     with Locations((track_points[0][0], z_height)):
                         Cylinder(cls.DESMO_PIN_DIAMETER / 2 + cls.DESMO_TRACK_TOLERANCE / 2, cls.DESMO_PIN_HEIGHT) 
 
-                for v_0, v_1 in zip(track_points[0:-2], track_points[1:]):
+                for v_0, v_1 in zip(track_points[0:-1], track_points[1:]):
                     if v_0[1] != v_1[1]:
                         # Angle cut
 
@@ -204,8 +204,8 @@ class Desmo(key.Key):
         
         with BuildPart() as desmo_key:
             add(desmo_blank)
-            add(build_track(right_track, -0.75*MM), mode = Mode.SUBTRACT)
-            add(build_track(left_track, cls.DESMO_KEY_WIDTH + 0.75*MM), mode = Mode.SUBTRACT)
+            add(build_track(right_track, -cls.DESMO_PIN_DIAMETER / 4), mode = Mode.SUBTRACT)
+            add(build_track(left_track, cls.DESMO_KEY_WIDTH + cls.DESMO_PIN_DIAMETER / 4), mode = Mode.SUBTRACT)
 
             # The tip cut on Desmo follows the tip and goes all the way to the track equally
             tip_x = 55*MM
@@ -218,7 +218,8 @@ class Desmo(key.Key):
             tip_edges = desmo_blank.edges().filter_by_position(Axis.X, tip_x, 100)
             tip_edges = tip_edges.group_by(Axis.Z)[0] + tip_edges.group_by(Axis.Z)[-1]
 
-            with BuildPart(mode = Mode.SUBTRACT) as tip_snip:
+            # We cut the tip to ramp into the last track smoothly
+            with BuildPart(mode = Mode.SUBTRACT):
                 for tip_edge in tip_edges:
                     v_0 = tip_edge.vertices()[0]
                     v_1 = tip_edge.vertices()[1]
@@ -227,7 +228,7 @@ class Desmo(key.Key):
                     v_1n = [float(v_1.X),float(v_1.Y),float(v_1.Z)]
 
                     is_left = True if v_0.Z > cls.DESMO_KEY_WIDTH else False
-                    z_off = 0.375*MM if is_left else -0.375*MM
+                    z_off = (cls.DESMO_KEY_WIDTH / 8) if is_left else -(cls.DESMO_KEY_WIDTH / 8)
                            
                     if v_0n[1] > cls.DESMO_KEY_TOP and v_0n[1] < cls.DESMO_KEY_Y_DATUM:
                         v_0n[1] = left_track[-1][1] if is_left else right_track[-1][1]
@@ -240,17 +241,14 @@ class Desmo(key.Key):
                     with BuildSketch(Plane.XZ.offset(-v_0n[1])):
                         with Locations((v_0n[0], v_0n[2] + z_off)):
                             Ellipse(x_radius = cls.DESMO_PIN_DIAMETER*3/2, y_radius = cls.DESMO_PIN_DIAMETER/2)
-                    with BuildLine() as test_line:
+                    with BuildLine():
                         Line(Vertex(v_0n), Vertex(v_1n))
                     sweep()
 
-            with BuildLine(Plane.XY.offset(cls.DESMO_KEY_WIDTH)) as left_track_cut:
+            with BuildLine(Plane.XY.offset(cls.DESMO_KEY_WIDTH)):
                 Polyline(left_track)
-            with BuildLine(Plane.XY) as right_track_cut:
-                Polyline(right_track)
-            with BuildLine(Plane.XY) as spacing:
-                for key_cut in cls.DESMO_CUT_SPACINGS:
-                    Line((cls.DESMO_KEY_X_DATUM + key_cut,0),(cls.DESMO_KEY_X_DATUM + key_cut,40))            
+            with BuildLine(Plane.XY):
+                Polyline(right_track)     
         return Part(desmo_key.part)
  
 
@@ -261,4 +259,4 @@ if __name__ == '__main__':
     #desmo_key = Desmo.key("6pin", "desmo", "632145")
     export_step(desmo_key, "desmo_key.step")
     #export_step(blank, "desmo_blank.step")
-    #show_all()
+    show_all()

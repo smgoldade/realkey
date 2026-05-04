@@ -76,11 +76,11 @@ class Memolis(key.Key):
 
     @classmethod
     def cut_definition(cls) -> str:
-        return "There are 14 cuts from bow to tip, with maximum lift as 0 and minimum lift as 5.<br/>" \
+        return "There are 14 cuts from bow to tip, with maximum lift as 0 and minimum lift as 5.<br>" \
         "The right side is defined as the right side of the key when the bow is held with the tip facing away. " \
-        "All right cuts come before all left cuts.<br/>" \
-        "Cuts 1 and 14 are always fixed for a given lock, but the rest can be changed with the appropriate change key and new key.<br/>" \
-        "On Memolis 2, a key cut of 0 will disable that lever.<br/><br/>" \
+        "All right cuts come before all left cuts.<br>" \
+        "Cuts 1 and 14 are always fixed for a given lock, but the rest can be changed with the appropriate change key and new key.<br>" \
+        "On Memolis 2, a key cut of 0 will disable that lever.<br><br>" \
         "<i>E.g. 40503325050251 will generate a key with 4050332 as right cuts, 5050251 as left cuts.</i>"
     
     @classmethod

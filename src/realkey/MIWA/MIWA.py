@@ -1,10 +1,11 @@
 from build123d import *
 
 from realkey.Common import key
+from realkey.Common import key_cutters
 
 class SR(key.Key):
     SR_KEY_X_DATUM = 28*MM
-    SR_KEY_Y_DATUM = 7.5*MM
+    SR_KEY_Y_DATUM = 7.375*MM
     SR_KEY_WIDTH = 2*MM
     SR_KEY_BLADE_HEIGHT = 8.25*MM
     SR_KEY_BLADE_WIDTH = 0.75*MM
@@ -12,6 +13,8 @@ class SR(key.Key):
 
     SR_CUT_SPACINGS = [i*2.25*MM + 5.5*MM for i in range(11)]
     SR_CUT_DEPTHS = [0*MM, 0.625*MM, 1.575*MM, 2*MM] # last cut jumps to 2mm based on known cuts
+    SR_CUT_WIDTH = 1*MM
+    SR_CUT_ANGLE = 60
 
     @classmethod
     def name(cls) -> str:
@@ -30,7 +33,7 @@ class SR(key.Key):
         return {"sr" : "SR"}
 
     @classmethod
-    def blank(cls, profile: str, keyway: str) -> key.Part:
+    def blank(cls, profile: str, keyway: str) -> Part:
         if profile not in cls.profiles(): raise ValueError("Invalid profile specified!")
         if keyway not in cls.keyways(): raise ValueError("Invalid keyway specified!")
 
@@ -57,10 +60,9 @@ class SR(key.Key):
 
     @classmethod
     def cut_definition(cls) -> str:
-        return "There are 4 cut depths, listed from tip to bow.<br/>" \
-        "The maximum cut is not a cut, and is labelled 0, with the minimum cut being 3.<br/>" \
-        "Do note that position 8 lacks a slider/wafer, so despite there being 11 holes, only 10 are populated.<br/>" \
-        "We ignore this cut when reading bitting.<br/>" \
+        return "There are 4 cut depths, listed from tip to bow.<br>" \
+        "The maximum lift cut is not a cut, and is labelled 0, with the minimum lift cut being 3.<br>" \
+        "Do note that position 8 lacks a slider/wafer, so do not enter a value for that slot of the bitting, as it is locked to a 0 cut.<br>" \
         "<i>E.g. 1101203021</i>"
 
     @classmethod
@@ -75,28 +77,32 @@ class SR(key.Key):
                 raise ValueError("Cut depths must be from 0 to 3")
 
     @classmethod
-    def key(cls, profile: str, keyway: str, bitting: str) -> key.Part:
+    def key(cls, profile: str, keyway: str, bitting: str) -> Part:
         cls.validate_bitting(profile, keyway, bitting)
 
         sr_blank = SR.blank(profile, keyway)
         mirror_plane = Plane.XZ.offset(-cls.SR_KEY_Y_DATUM - cls.SR_KEY_BLADE_HEIGHT / 2)
 
+        cut_points: list[tuple[float, float]] = []
+        for i, cut in enumerate(bitting):
+            depth_index = int(cut)
+            if i == 8:
+                cut_points.append((cls.SR_KEY_X_DATUM + cls.SR_CUT_SPACINGS[8], cls.SR_KEY_Y_DATUM))     
+            spacing_index = i if i<8 else i + 1 # there is a blank cut at position 8
+            
+            cut_x = cls.SR_KEY_X_DATUM + cls.SR_CUT_SPACINGS[spacing_index]
+            cut_y = cls.SR_KEY_Y_DATUM + cls.SR_CUT_DEPTHS[depth_index]
+            cut_points.append((cut_x, cut_y))
+
+        angled_cutter = key_cutters.angled_cutter(cut_points, cls.SR_CUT_WIDTH, cls.SR_KEY_Y_DATUM-0.25*MM, cls.SR_CUT_ANGLE)
+
         with BuildPart() as sr_key:
             add(sr_blank)
 
-            for i, cut in enumerate(bitting):
-                depth_index = int(cut)
-                spacing_index = i if i<8 else i + 1 # there is a blank cut at position 8
-                if depth_index == 0: continue # No point doing math when this does no cut
-                
-                cut_x = cls.SR_KEY_X_DATUM + cls.SR_CUT_SPACINGS[spacing_index]
-                cut_y = cls.SR_KEY_Y_DATUM - 2*MM + cls.SR_CUT_DEPTHS[depth_index]
-                
-                with BuildSketch() as cutter:
-                    with Locations((cut_x, cut_y)):
-                        Trapezoid(6*MM, 4*MM, 60)
-                    mirror(about = mirror_plane)
-                extrude(amount = cls.SR_KEY_WIDTH*2, mode = Mode.SUBTRACT)
+            with BuildSketch():
+                add(angled_cutter)
+                mirra = mirror(about = mirror_plane)
+            extrude(amount = cls.SR_KEY_WIDTH * 2, mode = Mode.SUBTRACT)
         return Part(sr_key.part)
 
 if __name__ == '__main__':
@@ -105,6 +111,6 @@ if __name__ == '__main__':
     #export_step(sr_blank, "sr_blank.step")
     sr_key = SR.key("10cut", "sr", "1101203021")
     export_step(sr_key, "sr_key.step")
-    show_all()
+    #show_all()
 
     

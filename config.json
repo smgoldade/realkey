@@ -1,6 +1,11 @@
 {
     "name": "realkey",
     "packages": ["micropip"],
+    "js_modules": {
+        "main": {
+            "key3d.js" : "key3d"
+        }
+    },
     "files": {
         "{PATH}": "./src/realkey",
         "{FROM}": "{PATH}",

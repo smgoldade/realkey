@@ -57,7 +57,8 @@ class PR1(key.Key):
 
     @classmethod
     def cut_definition(cls) -> str:
-        return "Key cuts are defined from bow to tip with maximum lift as 1 and minimum lift as 6<br/><br/><i>E.g. 6212121 for a PRO profile.</i>"
+        return "Key cuts are defined from bow to tip with maximum lift as 1 and minimum lift as 6<br><br>" \
+        "<i>E.g. 6212121 for a PRO profile.</i>"
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
@@ -82,6 +83,8 @@ class PR1(key.Key):
 
         a_key = cls.blank(profile, keyway)
         cutter = key_cutters.hpc_cw1011()
+        if cutter is None:
+            raise ValueError("Unable to build key cutter")
 
         for i, cut in enumerate(bitting):
             cut_x = cls.PR1_KEY_X_DATUM + cls.PR1_KEY_CUT_SPACINGS[i]
