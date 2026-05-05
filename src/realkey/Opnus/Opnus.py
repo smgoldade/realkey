@@ -75,7 +75,7 @@ class Memolis(key.Key):
         return Part(memolis_blank.part)
 
     @classmethod
-    def cut_definition(cls) -> str:
+    def basic_bitting_definition(cls) -> str:
         return "There are 14 cuts from bow to tip, with maximum lift as 0 and minimum lift as 5.<br>" \
         "The right side is defined as the right side of the key when the bow is held with the tip facing away. " \
         "All right cuts come before all left cuts.<br>" \
@@ -112,33 +112,6 @@ class Memolis(key.Key):
         cutter += base
         cutter += top_extra
         return cutter
-        #with BuildPart() as cutter:
-        #    with BuildSketch() as base:
-        #        RectangleRounded(1.5*MM, 1.25*MM, 0.624*MM)
-        #    extrude(amount = cls.MEMOLIS_MAX_DEPTH)
-
-        #    with BuildSketch() as bottom:
-        #        Rectangle(1.5*MM, 1*MM)
-
-        #    with BuildSketch(Plane.XY.offset(cls.MEMOLIS_MAX_DEPTH)) as top:
-        #        with BuildLine() as top_line:
-        #            Polyline (
-        #                (cls.MEMOLIS_CUT_SURFACE_WIDTH / 2, -2.5*MM / 2),
-        #                (cls.MEMOLIS_CUT_SURFACE_WIDTH / 2, 2.5*MM / 2),
-        #                (-cls.MEMOLIS_CUT_SURFACE_WIDTH / 2, 2.5*MM / 2),
-        #                (-cls.MEMOLIS_CUT_SURFACE_WIDTH / 2, -2.5*MM / 2),
-        #                (cls.MEMOLIS_CUT_SURFACE_WIDTH / 2, -2.5*MM / 2),
-        #            )
-        #            Polyline(
-        #                (6.25*MM / 2,cls.MEMOLIS_CUT_SURFACE_WIDTH / 2),
-        #                (6.25*MM / 2,-cls.MEMOLIS_CUT_SURFACE_WIDTH / 2),
-        #                (-6.25*MM / 2,-cls.MEMOLIS_CUT_SURFACE_WIDTH / 2),
-        #                (-6.25*MM / 2,cls.MEMOLIS_CUT_SURFACE_WIDTH / 2),
-        #                (6.25*MM / 2,cls.MEMOLIS_CUT_SURFACE_WIDTH / 2),
-        #            )
-        #        make_hull()
-        #    loft()
-        #return cutter.part
     
     @classmethod
     def key(cls, profile: str, keyway: str, bitting: str) -> Part:

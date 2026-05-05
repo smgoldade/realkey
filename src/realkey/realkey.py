@@ -3,26 +3,27 @@ from pyscript.ffi import to_js
 from pyscript.js_modules import key3d
 from js import URL, Blob
 
-import base64
+import binascii
 from realkey.Common import key
 from realkey.ASSA import ASSA
 from realkey.MIWA import MIWA
 from realkey.Opnus import Opnus
 from realkey.Paclock import Paclock
-from typing import Callable
 
 from build123d import *
 
 key_select: web.ElementCollection = web.page["key-select"]
 profile_select: web.ElementCollection = web.page["profile-select"]
 keyway_select: web.ElementCollection = web.page["keyway-select"]
+show_advanced: web.ElementCollection = web.page["show-advanced"]
 bitting_instructions: web.ElementCollection = web.page["bitting-instructions"]
 bitting: web.ElementCollection = web.page["bitting"]
 generate: web.ElementCollection = web.page["generate"]
-save_stl = web.page["save-stl"]
-save_step = web.page["save-step"]
-info = web.page["info"]
-model_overlay = web.page["model-overlay"]
+save_stl: web.ElementCollection = web.page["save-stl"]
+save_step: web.ElementCollection = web.page["save-step"]
+info: web.ElementCollection = web.page["info"]
+model_overlay: web.ElementCollection = web.page["model-overlay"]
+advanced_bitting_info: web.ElementCollection = web.page["advanced-bitting-info"]
 
 keygen = None
 stl_blob : Blob = None
@@ -36,12 +37,14 @@ def main(bg_keygen):
 
 def remove_loading():
     #defaults
-    global profile_select, keyway_select, bitting_instructions, bitting, generate, save_stl, save_step, info, model_overlay
+    global profile_select, keyway_select, show_advanced, bitting_instructions, bitting, generate, save_stl, save_step, info, model_overlay, advanced_bitting_info
     
     disable_element(key_select)
     disable_element(profile_select)
     disable_element(keyway_select)
     disable_element(bitting)
+    if not "hide" in show_advanced.classes:
+        show_advanced.classes.add("hide")
     bitting_instructions.innerHTML = ""
     bitting.value = "" 
     disable_element(generate)
@@ -49,10 +52,11 @@ def remove_loading():
     disable_element(save_step)
     info.innerHTML = ""
     model_overlay.innerHTML = ""
+    advanced_bitting_info.innerHTML = ""
 
     key3d.loadKey("resources/realkey.stl")
     loader = web.page["loader"]
-    loader.remove()
+    loader.classes.add("hide")
 
 def load_keys():
     global key_select
@@ -88,6 +92,9 @@ def load_profiles_and_keyways():
     if selected_key is None:
         populate_select(profile_select, "No profiles loaded...", {})
         populate_select(keyway_select, "No keyways loaded...", {})
+        if not "hide" in show_advanced.classes:
+            show_advanced.classes.add("hide")
+        advanced_bitting_info.innerHTML = ""
         bitting_instructions.innerHTML = ""
         bitting.value = ""
         disable_element(profile_select)
@@ -100,7 +107,11 @@ def load_profiles_and_keyways():
 
     populate_select(profile_select, "", selected_key.profiles())
     populate_select(keyway_select, "", selected_key.keyways())
-    bitting_instructions.innerHTML = selected_key.cut_definition()
+    decode_definition= selected_key.advanced_bitting_definition()
+    if decode_definition is not None:
+        show_advanced.classes.discard("hide")
+        advanced_bitting_info.innerHTML = decode_definition
+    bitting_instructions.innerHTML = selected_key.basic_bitting_definition()
     bitting.value = ""
     enable_element(profile_select)
     enable_element(keyway_select)
@@ -142,10 +153,12 @@ async def generate_key():
     if "error" in gen_keys:
         decoded_error = gen_keys["error"]
         info.innerHTML = f"<span style='color:#800'>{decoded_error}</span>"
+        model_overlay.innerHTML = ""
+        enable_element(generate)
         return
 
-    stl_bytes = base64.b64decode(gen_keys["stl"])
-    step_bytes = base64.b64decode(gen_keys["step"])
+    stl_bytes = binascii.a2b_base64(gen_keys["stl"])
+    step_bytes = binascii.a2b_base64(gen_keys["step"])
     stl_blob = Blob.new([to_js(stl_bytes)],{type: "model/stl"})
     step_blob = Blob.new([to_js(step_bytes)], {type: "model/step"})
 
@@ -187,7 +200,6 @@ def save_as_step():
     if step_blob is None: return
 
     save_shared(step_blob, "step")
-
 
 def populate_select(select_element: web.ElementCollection, null_string: str, dict: dict[str,str]):
     select_element.options.clear()

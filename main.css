@@ -1,5 +1,3 @@
-@import url(https://fonts.bunny.net/css?family=alexandria:400);
-
 a {
     color: #CCC;
 }
@@ -28,6 +26,7 @@ button {
     border-radius: 5px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     
+    font-family: 'Alexandria', sans-serif;
     color: #CCC
 }
 
@@ -38,6 +37,17 @@ button[disabled] {
     background-color: transparent;
 
     color: rgba(192, 192, 192, 0.26);
+}
+
+dialog {
+    max-width: 75em;
+    padding: 0.67em;
+
+    background: #222;
+    border-radius: 10px;
+
+    font-family: 'Alexandria', sans-serif;
+    color: #999;
 }
 
 h1 {
@@ -52,7 +62,9 @@ input,
 select {
     background-color: #333;
     border-radius: 4px;
+    padding: 0.67em;
     
+    font-family: 'Alexandria', sans-serif;
     font-style: normal;
     color: #CCC;
 }
@@ -63,11 +75,35 @@ select[disabled] {
     font-style: italic;
 }
 
-.container {
-    padding: 1em;
-    
-    background-color: #222;
-    border-radius: 10px;
+table {
+    border-collapse: collapse;
+    margin: 0.25em;
+}
+
+table, th, td {
+    border: 2px solid #000;
+}
+
+tr:nth-child(even) {
+    background-color: #555;
+}
+
+tr:nth-child(odd) {
+    background-color: #444;
+}
+
+.blue-button {
+    background-color: #008;
+}
+
+.blue-button:hover {
+    background-color: #007;
+}
+
+.even-flex {
+    display: flex; 
+    justify-content: space-evenly;
+    align-items: center;
 }
 
 .green-button {
@@ -78,6 +114,18 @@ select[disabled] {
     background-color: #070;
 }
 
+.hide {
+    display: none!important;
+}
+
+.info-button {
+    all: unset;
+
+    padding: 0 6px;
+
+    cursor: pointer;
+}
+
 .red-button {
     background-color: #800;
 }
@@ -86,19 +134,49 @@ select[disabled] {
     background-color: #700;
 }
 
+#advanced-bitting-info {
+    max-height: 40em;
+    overflow-y: auto;
+}
+
 #canvas {
     width: 100%;
     min-height: 30em;
 }
 
+#content {
+    max-width: 70em;
+
+    padding: 1em;
+    
+    background-color: #222;
+    border-radius: 10px;
+}
+
 #header {
-    width: 100%
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#header-text {
+    width: 100%;
+}
+
+#header-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #left-sidebar {
     width: 40%;
 
     padding: 0.5em;
+
+    display: block;
 
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -122,8 +200,6 @@ select[disabled] {
 }
 
 #main {
-    max-width: 70em;
-
     display: flex;
     justify-content: center;
     align-self: center;
@@ -163,6 +239,14 @@ select[disabled] {
 
     color: #555;
     font-style: italic;
+}
+
+#settings-detail {
+    padding: 0.5em;
+
+    background: #333;
+    border: 2px #000;
+    border-radius: 4px;
 }
 
 #status {

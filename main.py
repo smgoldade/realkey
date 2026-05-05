@@ -1,22 +1,24 @@
-import micropip
+
 from pyscript import display, workers
+import sys
 
-# Bootstrap load in build123d
-async def bootstrap(ocp_index = "https://yeicor.github.io/OCP.wasm"):
-    # Prioritize the OCP.wasm package repository so that wasm-specific packages are preferred.
-    micropip.set_index_urls([ocp_index, "https://pypi.org/simple"])
-
-    # Install the required packages.
-    await micropip.install(["ipython == 9.10.0", "build123d"])
-
-# Kick off loading worker
-
-# Load the boot strap
-display("Bootstrapping build123d...", target = "status", append = False)
-result = await bootstrap()
-display("Waiting for background worker...", target = "status", append = False)
+# Kick off key generating worker
+display("Loading key generation system...", target = "status", append = False)
 keygen = await workers["keygen"]
 display("Loaded!", target = "status", append = False)
+
+# Mock build123d
+class Empty: pass
+
+bogus123d = Empty()
+sys.modules["build123d"] = bogus123d
+
+# Mock features of build123d adhering to the ideas:
+# - Any BRep or geometry generation should fail, we should not be doing that on the light web front-end!
+# - Anything else is fine, and we should have reasonable implementations
+bogus123d.MM = 1
+bogus123d.IN = 25.4
+bogus123d.Part = None
 
 # Jump into realkey
 from realkey import realkey

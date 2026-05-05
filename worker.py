@@ -1,5 +1,4 @@
 import micropip
-from pyscript import display
 
 # Bootstrap load in build123d
 async def bootstrap(ocp_index = "https://yeicor.github.io/OCP.wasm"):
@@ -12,7 +11,7 @@ async def bootstrap(ocp_index = "https://yeicor.github.io/OCP.wasm"):
 # Load the boot strap
 result = await bootstrap()
 
-import base64
+import binascii
 from realkey.Common import key
 from realkey.ASSA import ASSA
 from realkey.MIWA import MIWA
@@ -30,9 +29,9 @@ def generate_key(key_tag: str, profile: str, keyway: str, bitting: str) -> dict[
     
         returns : dict[str, str] = {}
         with open("temp.stl", "rb") as stl:
-            returns["stl"] = base64.b64encode(stl.read()).decode("utf-8")
+            returns["stl"] = binascii.b2a_base64(stl.read()).decode("utf-8")
         with open("temp.step", "rb") as step:
-            returns["step"] = base64.b64encode(step.read()).decode("utf-8")
+            returns["step"] = binascii.b2a_base64(step.read()).decode("utf-8")
         
         return returns
     except Exception as e:

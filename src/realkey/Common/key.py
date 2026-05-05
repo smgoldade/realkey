@@ -8,7 +8,6 @@ class Key(abc.ABC):
 
     def __init_subclass__(cls, **kwargs):
         """Used to have a list of all current keys available for generation"""
-        super().__init_subclass__(**kwargs)
         Key._list[cls.name()] = cls
 
     @classmethod
@@ -38,7 +37,12 @@ class Key(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def cut_definition(cls) -> str:
+    def advanced_bitting_definition(cls) -> str | None:
+        """Provides detailed decoding instructions to assist in bitting"""
+
+    @classmethod
+    @abc.abstractmethod
+    def basic_bitting_definition(cls) -> str:
         """Provides an explanation for how the bitting string should be interpreted"""
 
     @classmethod

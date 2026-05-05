@@ -58,7 +58,7 @@ class Desmo(key.Key):
         return Part(desmo_blank.part)
 
     @classmethod
-    def cut_definition(cls) -> str:
+    def basic_bitting_definition(cls) -> str:
         return "Cuts proceed from right side bow to tip, then left side bow to tip, with 1 being the maximum lift and 6 being the minimum lift<br><br>" \
         "<i>E.g. 145362 represents 145 on the right, 362 on the left</i>"
 
@@ -66,19 +66,14 @@ class Desmo(key.Key):
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
         if not bitting.isnumeric():
             raise ValueError("Only numeric cuts are allowed")
-        match profile:
-            case "6pin":
-                if len(bitting) > 6:
-                    raise ValueError("6 pin profile only supports a maximum of 6 cuts")
-            case "8pin":
-                if len(bitting) > 8:
-                    raise ValueError("8 pin profile only supports a maximum of 8 cuts")
-            case "10pin":
-                if len(bitting) > 10:
-                    raise ValueError("10 pin profile only supports a maximum of 10 cuts")
+        if profile == "6pin" and len(bitting) > 6:
+            raise ValueError("6 pin profile only supports a maximum of 6 cuts")
+        if profile == "8pin" and len(bitting) > 8:
+            raise ValueError("8 pin profile only supports a maximum of 8 cuts")
+        if profile == "10pin" and len(bitting) > 10:
+            raise ValueError("10 pin profile only supports a maximum of 10 cuts")
         if len(bitting) % 2 != 0:
             raise ValueError("Number of cuts must be even")
-                
         for cut in bitting:
             if int(cut) < 1 or int(cut) > 6:
                 raise ValueError("Cut depths must be from 1 to 6")
@@ -209,11 +204,10 @@ class Desmo(key.Key):
 
             # The tip cut on Desmo follows the tip and goes all the way to the track equally
             tip_x = 55*MM
-            match profile:
-                case "8pin":
-                    tip_x = 51.5*MM
-                case "6pin":
-                    tip_x = 48*MM
+            if profile == "8pin":
+                tip_x = 51.5*MM
+            if profile == "6pin":
+                tip_x = 48*MM
 
             tip_edges = desmo_blank.edges().filter_by_position(Axis.X, tip_x, 100)
             tip_edges = tip_edges.group_by(Axis.Z)[0] + tip_edges.group_by(Axis.Z)[-1]

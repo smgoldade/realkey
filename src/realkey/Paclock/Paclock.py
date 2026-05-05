@@ -56,7 +56,7 @@ class PR1(key.Key):
         return Part(blank, "Paclock PR1 Key Blank")
 
     @classmethod
-    def cut_definition(cls) -> str:
+    def basic_bitting_definition(cls) -> str:
         return "Key cuts are defined from bow to tip with maximum lift as 1 and minimum lift as 6<br><br>" \
         "<i>E.g. 6212121 for a PRO profile.</i>"
 
@@ -64,14 +64,10 @@ class PR1(key.Key):
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
         if not bitting.isnumeric():
             raise ValueError("Only numeric cuts are allowed")
-        
-        match profile:
-            case "PR1":
-                if len(bitting) > 6:
-                    raise ValueError("Maximum supported cuts for PR1 profile is 6")
-            case "PRO":
-                if len(bitting) > 7:
-                    raise ValueError("Maximum supported cuts for PRO profile is 7")
+        if profile == "pr1" and len(bitting) > 6:
+            raise ValueError("Maximum supported cuts for PR1 profile is 6")
+        if profile == "pro" and len(bitting) > 7:                    
+            raise ValueError("Maximum supported cuts for PRO profile is 7")
                 
         for cut in bitting:
             if int(cut) < 1 or int(cut) > 6:

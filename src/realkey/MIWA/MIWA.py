@@ -57,13 +57,55 @@ class SR(key.Key):
                     offset(kw, amount = -0.125*MM, kind = Kind.INTERSECTION, mode = Mode.SUBTRACT) 
             extrude(amount = 50*MM, mode = Mode.SUBTRACT)            
         return Part(sr_blank.part)
+    
+    @classmethod
+    def advanced_bitting_definition(cls) -> str | None:
+        return "<h2>MIWA SR Bitting</h2>" \
+        "<div class='even-flex'>" \
+        "<table><caption>Key Width</caption>" \
+        "<thead><tr><th>Cut</th><th>Width</th></tr></thead>" \
+        "<tbody>" \
+        f"<tr><td>0</td><td>{cls.SR_KEY_BLADE_HEIGHT - 2*cls.SR_CUT_DEPTHS[0]}mm</td></tr>" \
+        f"<tr><td>1</td><td>{cls.SR_KEY_BLADE_HEIGHT - 2*cls.SR_CUT_DEPTHS[1]}mm</td></tr>" \
+        f"<tr><td>2</td><td>{cls.SR_KEY_BLADE_HEIGHT - 2*cls.SR_CUT_DEPTHS[2]}mm</td></tr>" \
+        f"<tr><td>3</td><td>{cls.SR_KEY_BLADE_HEIGHT - 2*cls.SR_CUT_DEPTHS[3]}mm</td></tr>" \
+        "</tbody></table>" \
+        "<table><caption>Cut Depth</caption>" \
+        "<thead><tr><th>Cut</th><th>Width</th></tr></thead>" \
+        "<tbody>" \
+        f"<tr><td>0</td><td>{cls.SR_CUT_DEPTHS[0]}mm</td></tr>" \
+        f"<tr><td>1</td><td>{cls.SR_CUT_DEPTHS[1]}mm</td></tr>" \
+        f"<tr><td>2</td><td>{cls.SR_CUT_DEPTHS[2]}mm</td></tr>" \
+        f"<tr><td>3</td><td>{cls.SR_CUT_DEPTHS[3]}mm</td></tr>" \
+        "</tbody></table>" \
+        "<table><caption>Cut Spacing</caption>" \
+        "<thead><tr><th>Cut</th><th>Spacing</th></tr></thead>" \
+        "<tbody>" \
+        f"<tr><td>1</td><td>{cls.SR_CUT_SPACINGS[0]}mm</td></tr>" \
+        f"<tr><td>2</td><td>{cls.SR_CUT_SPACINGS[1]}mm</td></tr>" \
+        f"<tr><td>3</td><td>{cls.SR_CUT_SPACINGS[2]}mm</td></tr>" \
+        f"<tr><td>4</td><td>{cls.SR_CUT_SPACINGS[3]}mm</td></tr>" \
+        f"<tr><td>5</td><td>{cls.SR_CUT_SPACINGS[4]}mm</td></tr>" \
+        f"<tr><td>6</td><td>{cls.SR_CUT_SPACINGS[5]}mm</td></tr>" \
+        f"<tr><td>7</td><td>{cls.SR_CUT_SPACINGS[6]}mm</td></tr>" \
+        f"<tr><td>8</td><td>{cls.SR_CUT_SPACINGS[7]}mm</td></tr>" \
+        f"<tr><td>9</td><td>{cls.SR_CUT_SPACINGS[9]}mm</td></tr>" \
+        f"<tr><td>10</td><td>{cls.SR_CUT_SPACINGS[10]}mm</td></tr>" \
+        "</tbody></table>" \
+        "</div>" \
+        "<div><h3>Keyed</h3>" \
+        "An example key decoding is provided below, note the dead space after the 8th bitting, this is because the SR lacks a slider/wafer in this position." \
+        "<div class='even-flex'><img src='resources/MIWA_SR_Key_Decode.png'/></div>" \
+        "</div><h3>Keyless</h3>" \
+        "Removing the core from the housing, bitting can be read from where to wafers sit at rest. An example decoding is provided below." \
+        "<div class='even-flex'><img src='resources/MIWA_SR_Lock_Decode.png'/></div>" \
+        "</div>" \
 
     @classmethod
-    def cut_definition(cls) -> str:
-        return "There are 4 cut depths, listed from tip to bow.<br>" \
-        "The maximum lift cut is not a cut, and is labelled 0, with the minimum lift cut being 3.<br>" \
-        "Do note that position 8 lacks a slider/wafer, so do not enter a value for that slot of the bitting, as it is locked to a 0 cut.<br>" \
-        "<i>E.g. 1101203021</i>"
+    def basic_bitting_definition(cls) -> str:
+        return "Cuts: Up to 10, defined from bow to tip.<br>" \
+        "Depths: Maximum Lift 0 to Minimum Lift 3<br>" \
+        "Example: <i>1101203021</i>"
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
