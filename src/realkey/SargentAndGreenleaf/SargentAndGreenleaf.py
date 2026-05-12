@@ -5,7 +5,7 @@ from realkey.Common import key_cutters, key
 
 class SG44XXGuard(key.Key):
     SG44XX_CUT_SPACINGS = [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.378 * IN]
-    SG44XX_CUT_WIDTHS = [0.060 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.060 * IN]
+    SG44XX_CUT_WIDTHS = [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN]
     SG44XX_CUT_DEPTHS = [i * 0.020 * IN for i in range(8)]
 
     SG44XX_KEY_WIDTH = 2 * MM
@@ -74,32 +74,26 @@ class SG44XXGuard(key.Key):
 
         sg_blank = cls.blank(profile, keyway)
 
-        cut_points: list[tuple[float, float]] = []
-        cut_widths: list[float] = []
-        for i, cut in enumerate(bitting):
-            depth_index = int(cut)
-
-            cut_x = cls.SG44XX_X_DATUM - cls.SG44XX_CUT_SPACINGS[i]
-            cut_y = cls.SG44XX_Y_DATUM + cls.SG44XX_CUT_DEPTHS[depth_index]
-            cut_points.append((cut_x, cut_y))
-            cut_widths.append(cls.SG44XX_CUT_WIDTHS[i])
-
-        angled_cutter = key_cutters.angled_cutter_with_widths(cut_points[::-1], cut_widths[::-1], cls.SG44XX_Y_DATUM - 0.25 * MM, 90)
-
         with BuildPart() as sg_key:
             add(sg_blank)
 
             with BuildSketch():
-                add(angled_cutter)
+                # Throat notch
                 with Locations((cls.SG44XX_X_DATUM - cls.SG44XX_THROAT_SPACING, cls.SG44XX_Y_DATUM + cls.SG44XX_THROAT_DEPTH / 2 - 0.001 * MM)):
                     Rectangle(cls.SG44XX_THROAT_WIDTH, cls.SG44XX_THROAT_DEPTH)
-            extrude(amount=cls.SG44XX_KEY_WIDTH * 2, mode=Mode.SUBTRACT)
 
-            # For Zehkar
-            # with BuildSketch():
-            #    with Locations(Location((10,11.322),90)):
-            #        Text("GAURD", 4)
-            # extrude(amount=cls.SG44XX_KEY_WIDTH * 1.5)
+                for i, cut in enumerate(bitting):
+                    depth_index = int(cut)
+
+                    cut_x = cls.SG44XX_X_DATUM - cls.SG44XX_CUT_SPACINGS[i]
+                    cut_depth = cls.SG44XX_CUT_DEPTHS[depth_index]
+                    cut_y = cls.SG44XX_Y_DATUM + cut_depth / 2 - 0.001 * MM
+
+                    with Locations((cut_x, cut_y)):
+                        Rectangle(cls.SG44XX_CUT_WIDTHS[i], cut_depth + 0.0005 * MM)
+            show_all()
+            extrude(amount=cls.SG44XX_KEY_WIDTH * 2, mode=Mode.SUBTRACT)
+        show_all()
         return Part(sg_key.part)
 
 
@@ -107,6 +101,5 @@ if __name__ == "__main__":
     from ocp_vscode import *
 
     # blank = SG44XXGuard.blank("87h", "lever")
-    key = SG44XXGuard.key("87h", "lever", "24622")
+    key = SG44XXGuard.key("87h", "lever", "67067")
     # export_step(key, "guard_key.step")
-    show_all()

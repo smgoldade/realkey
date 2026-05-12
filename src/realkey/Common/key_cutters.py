@@ -139,8 +139,6 @@ def angled_cutter_with_widths(cuts: list[tuple[float, float]], min_cut_widths: l
         append_segment(cut_points, c1x, c1y, min_width)
         i += 1
 
-    print(cuts)
-    print(cut_points)
     # calculate trailing angled cut
     half_min_width = min_cut_widths[-1] / 2
     cl_y = cuts[-1][1]
