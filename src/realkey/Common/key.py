@@ -32,8 +32,8 @@ class Key(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def blank(cls, profile: str, keyway: str) -> Part:
-        """Returns a blank for the key with the given profile and keyway"""
+    def basic_bitting_definition(cls) -> str:
+        """Provides an explanation for how the bitting string should be interpreted"""
 
     @classmethod
     @abc.abstractmethod
@@ -42,13 +42,13 @@ class Key(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def basic_bitting_definition(cls) -> str:
-        """Provides an explanation for how the bitting string should be interpreted"""
+    def validate_bitting(cls, profile: str, keyway: str, bitting: str):
+        """Validates if the bitting is valid for the given profile and keyway"""
 
     @classmethod
     @abc.abstractmethod
-    def validate_bitting(cls, profile: str, keyway: str, bitting: str):
-        """Validates if the bitting is valid for the given profile and keyway"""
+    def blank(cls, profile: str, keyway: str) -> Part:
+        """Returns a blank for the key with the given profile and keyway"""
 
     @classmethod
     @abc.abstractmethod

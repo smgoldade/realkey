@@ -1,14 +1,16 @@
-
 from pyscript import display, workers
 import sys
 
 # Kick off key generating worker
-display("Loading key generation system...", target = "status", append = False)
+display("Loading key generation system...", target="status", append=False)
 keygen = await workers["keygen"]
-display("Loaded!", target = "status", append = False)
+display("Loaded!", target="status", append=False)
+
 
 # Mock build123d
-class Empty: pass
+class Empty:
+    pass
+
 
 bogus123d = Empty()
 sys.modules["build123d"] = bogus123d
@@ -22,4 +24,5 @@ bogus123d.Part = None
 
 # Jump into realkey
 from realkey import realkey
+
 realkey.main(keygen)

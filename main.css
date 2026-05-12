@@ -121,6 +121,7 @@ tr:nth-child(odd) {
 .info-button {
     all: unset;
 
+    margin: 0.25em;
     padding: 0 6px;
 
     cursor: pointer;
@@ -134,9 +135,9 @@ tr:nth-child(odd) {
     background-color: #700;
 }
 
-#advanced-bitting-info {
+.scrollable-dialog {
     max-height: 40em;
-    overflow-y: auto;
+    overflow: auto;
 }
 
 #canvas {

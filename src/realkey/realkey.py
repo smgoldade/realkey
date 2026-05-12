@@ -9,6 +9,7 @@ from realkey.ASSA import ASSA
 from realkey.MIWA import MIWA
 from realkey.Opnus import Opnus
 from realkey.Paclock import Paclock
+from realkey.SargentAndGreenleaf import SargentAndGreenleaf
 
 from build123d import *
 
@@ -26,8 +27,9 @@ model_overlay: web.ElementCollection = web.page["model-overlay"]
 advanced_bitting_info: web.ElementCollection = web.page["advanced-bitting-info"]
 
 keygen = None
-stl_blob : Blob = None
-step_blob : Blob = None # Help me step blob Im stuck
+stl_blob: Blob = None
+step_blob: Blob = None  # Help me step blob Im stuck
+
 
 def main(bg_keygen):
     global keygen
@@ -35,10 +37,11 @@ def main(bg_keygen):
     remove_loading()
     load_keys()
 
+
 def remove_loading():
-    #defaults
+    # defaults
     global profile_select, keyway_select, show_advanced, bitting_instructions, bitting, generate, save_stl, save_step, info, model_overlay, advanced_bitting_info
-    
+
     disable_element(key_select)
     disable_element(profile_select)
     disable_element(keyway_select)
@@ -46,7 +49,7 @@ def remove_loading():
     if not "hide" in show_advanced.classes:
         show_advanced.classes.add("hide")
     bitting_instructions.innerHTML = ""
-    bitting.value = "" 
+    bitting.value = ""
     disable_element(generate)
     disable_element(save_stl)
     disable_element(save_step)
@@ -58,29 +61,36 @@ def remove_loading():
     loader = web.page["loader"]
     loader.classes.add("hide")
 
+
 def load_keys():
     global key_select
-    populate_select(key_select, "Choose a key", {k : v.display_name() for k,v in key.Key._list.items()})
+    populate_select(key_select, "Choose a key", {k: v.display_name() for k, v in key.Key._list.items()})
     enable_element(key_select)
+
 
 def get_selected_key() -> key.Key | None:
     global key_select
     key_tag = key_select.options.selected.value
-    if key_tag == "null" or key_tag is None: return None
+    if key_tag == "null" or key_tag is None:
+        return None
 
     return key.Key._list[key_tag]
+
 
 def get_selected_profile() -> str:
     global profile_select
     return str(profile_select.options.selected.value)
 
+
 def get_selected_keyway() -> str:
     global keyway_select
     return str(keyway_select.options.selected.value)
 
+
 def get_bitting() -> str:
     global bitting
     return str(bitting.value)
+
 
 @when("change", "#key-select")
 def load_profiles_and_keyways():
@@ -107,10 +117,14 @@ def load_profiles_and_keyways():
 
     populate_select(profile_select, "", selected_key.profiles())
     populate_select(keyway_select, "", selected_key.keyways())
-    decode_definition= selected_key.advanced_bitting_definition()
+    decode_definition = selected_key.advanced_bitting_definition()
     if decode_definition is not None:
         show_advanced.classes.discard("hide")
         advanced_bitting_info.innerHTML = decode_definition
+    else:
+        if not "hide" in show_advanced.classes:
+            show_advanced.classes.add("hide")
+        advanced_bitting_info.innerHTML = ""
     bitting_instructions.innerHTML = selected_key.basic_bitting_definition()
     bitting.value = ""
     enable_element(profile_select)
@@ -118,12 +132,14 @@ def load_profiles_and_keyways():
     enable_element(bitting)
     enable_element(generate)
 
+
 @when("keyup", "#bitting")
 def bitting_change():
     global info
 
     selected_key = get_selected_key()
-    if selected_key is None: return
+    if selected_key is None:
+        return
     try:
         profile = get_selected_profile()
         keyway = get_selected_keyway()
@@ -132,24 +148,25 @@ def bitting_change():
         info.innerHTML = ""
     except Exception as e:
         info.innerHTML = f"<span style='color:#800'>{e}</span>"
-    
+
 
 @when("click", "#generate")
 async def generate_key():
     global generate, preview, save_stl, save_step, info, model_overlay, keygen, stl_blob, step_blob
     disable_element(generate)
     disable_element(save_stl)
-    disable_element(save_step)   
+    disable_element(save_step)
 
     selected_key = get_selected_key()
-    if selected_key is None: return
+    if selected_key is None:
+        return
 
     model_overlay.innerHTML = "Generating..."
     profile = get_selected_profile()
     keyway = get_selected_keyway()
     bitting = get_bitting()
 
-    gen_keys= (await keygen.generate_key(selected_key.name(), profile, keyway, bitting)).to_py()
+    gen_keys = (await keygen.generate_key(selected_key.name(), profile, keyway, bitting)).to_py()
     if "error" in gen_keys:
         decoded_error = gen_keys["error"]
         info.innerHTML = f"<span style='color:#800'>{decoded_error}</span>"
@@ -159,17 +176,18 @@ async def generate_key():
 
     stl_bytes = binascii.a2b_base64(gen_keys["stl"])
     step_bytes = binascii.a2b_base64(gen_keys["step"])
-    stl_blob = Blob.new([to_js(stl_bytes)],{type: "model/stl"})
+    stl_blob = Blob.new([to_js(stl_bytes)], {type: "model/stl"})
     step_blob = Blob.new([to_js(step_bytes)], {type: "model/step"})
 
     stl_url = URL.createObjectURL(stl_blob)
     key3d.loadKey(stl_url)
     URL.revokeObjectURL(stl_url)
     model_overlay.innerHTML = ""
-    
+
     enable_element(generate)
     enable_element(save_stl)
     enable_element(save_step)
+
 
 def save_shared(blob, extension: str):
     global key_select
@@ -190,30 +208,37 @@ def save_shared(blob, extension: str):
 @when("click", "#save-stl")
 def save_as_stl():
     global stl_blob
-    if stl_blob is None: return
+    if stl_blob is None:
+        return
 
     save_shared(stl_blob, "stl")
+
 
 @when("click", "#save-step")
 def save_as_step():
     global step_blob
-    if step_blob is None: return
+    if step_blob is None:
+        return
 
     save_shared(step_blob, "step")
 
-def populate_select(select_element: web.ElementCollection, null_string: str, dict: dict[str,str]):
+
+def populate_select(select_element: web.ElementCollection, null_string: str, dict: dict[str, str]):
     select_element.options.clear()
     if len(null_string) > 0:
-        select_element.options.add(value = "null", html = null_string)
-    
+        select_element.options.add(value="null", html=null_string)
+
     for value, html in dict.items():
-        select_element.options.add(value = value, html = html)
+        select_element.options.add(value=value, html=html)
+
 
 def enable_element(element: web.ElementCollection):
     element.removeAttribute("disabled")
 
+
 def disable_element(element: web.ElementCollection):
     element.disabled = True
+
 
 def uncheck_element(element: web.ElementCollection):
     element.removeAttribute("checked")

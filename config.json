@@ -24,9 +24,12 @@
 
         "{FROM}/Paclock/Paclock.py" : "{TO}/Paclock/Paclock.py",
 
-        "resources/ASSA.svg" : "resources/ASSA.svg",
-        "resources/MIWA.svg" : "resources/MIWA.svg",
-        "resources/Opnus.svg" : "resources/Opnus.svg",
-        "resources/Paclock.svg" : "resources/Paclock.svg"
+        "{FROM}/SargentAndGreenleaf/SargentAndGreenleaf.py" : "{TO}/SargentAndGreenleaf/SargentAndGreenleaf.py",
+
+        "resources/SargentAndGreenleaf/87H.step": "resources/SargentAndGreenleaf/87H.step",
+        "resources/ASSA/Desmo.svg" : "resources/ASSA/Desmo.svg",
+        "resources/MIWA/SR.svg" : "resources/MIWA/SR.svg",
+        "resources/Opnus/Memolis.svg" : "resources/Opnus/Memolis.svg",
+        "resources/Paclock/PR1.svg" : "resources/Paclock/PR1.svg"
     }
 }
