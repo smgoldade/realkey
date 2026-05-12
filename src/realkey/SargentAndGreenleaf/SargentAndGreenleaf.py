@@ -74,23 +74,23 @@ class SG44XXGuard(key.Key):
 
         sg_blank = cls.blank(profile, keyway)
 
+        lever_cuts: list[tuple[float, float, float]] = []
+        for i, cut in enumerate(bitting):
+            depth_index = int(cut)
+
+            cut_x = cls.SG44XX_X_DATUM - cls.SG44XX_CUT_SPACINGS[i]
+            cut_y = cls.SG44XX_Y_DATUM + cls.SG44XX_CUT_DEPTHS[depth_index]
+            lever_cuts.append((cut_x, cut_y, cls.SG44XX_CUT_WIDTHS[i]))
+
+        # Add throat
+        lever_cuts.append((cls.SG44XX_X_DATUM - cls.SG44XX_THROAT_SPACING, cls.SG44XX_Y_DATUM + cls.SG44XX_THROAT_DEPTH, cls.SG44XX_THROAT_WIDTH))
+        lever_cutter = key_cutters.lever_cutter(lever_cuts, cls.SG44XX_Y_DATUM - 0.001 * MM)
+
         with BuildPart() as sg_key:
             add(sg_blank)
 
             with BuildSketch():
-                # Throat notch
-                with Locations((cls.SG44XX_X_DATUM - cls.SG44XX_THROAT_SPACING, cls.SG44XX_Y_DATUM + cls.SG44XX_THROAT_DEPTH / 2 - 0.001 * MM)):
-                    Rectangle(cls.SG44XX_THROAT_WIDTH, cls.SG44XX_THROAT_DEPTH)
-
-                for i, cut in enumerate(bitting):
-                    depth_index = int(cut)
-
-                    cut_x = cls.SG44XX_X_DATUM - cls.SG44XX_CUT_SPACINGS[i]
-                    cut_depth = cls.SG44XX_CUT_DEPTHS[depth_index]
-                    cut_y = cls.SG44XX_Y_DATUM + cut_depth / 2 - 0.001 * MM
-
-                    with Locations((cut_x, cut_y)):
-                        Rectangle(cls.SG44XX_CUT_WIDTHS[i], cut_depth + 0.0005 * MM)
+                add(lever_cutter)
             extrude(amount=cls.SG44XX_KEY_WIDTH * 2, mode=Mode.SUBTRACT)
         show_all()
         return Part(sg_key.part)

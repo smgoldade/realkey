@@ -2,82 +2,112 @@ from build123d import *
 import math
 
 
-def hpc_cw1011():
-    tip_width = 0.044 * IN
-    cutter_width = 0.25 * IN
-    cutter_height = 2.375 * IN / 2
-    angle = 90
-
-    a = tip_width / 2
-    b = cutter_width / 2
-    c = b * math.tan(math.radians(angle / 2))
-
-    cutter_points = [(-a, -cutter_height), (a, -cutter_height), (b, c - cutter_height), (b, 0), (-b, 0), (-b, c - cutter_height), (-a, -cutter_height)]
-
-    with BuildPart() as hpc_cw1011:
-        with BuildSketch():
-            with BuildLine():
-                Polyline(cutter_points)
-            make_face()
-        revolve(axis=Axis.X)
-    if hpc_cw1011.part is None:
-        return None
-    hpc_cw1011.part.locate(Location((0, cutter_height)))
-    return hpc_cw1011.part
-
-
-def angled_cutter(cuts: list[tuple[float, float]], min_cut_width: float, neutral_y: float, angle: float):
-    """Generates a specialized cutter with a fixed angle. The angled cut is placed halfway between two adjacent cuts.
+def angled_cutter(cuts: list[tuple[float, float]], cut_root_width: float, neutral_y: float, max_cutter_width: float, angle: float) -> Sketch:
+    """Generates a generic angled cutter with a fixed angle and set root width. Undercut is allowed by this cutter.
 
     Args:
         cuts (list[tuple[float, float]]): A list of cut centers, specified as (x, y)
-        min_cut_width (float): The minimum width a cut should be, used to validate if the cuts are possible
+        cut_root_width (float): The width of the flat spot or root of the cut
         neutral_y (float): The default neutral position for ramp in and ramp out, typically the Y value of the top of the key with a little cushion to close the shape.
-        angle (float): The desired angle of all cuts, defined as the angle between the ramps and a the bottom of the bitting
+        max_cutter_width (float): A maximum width for the cutter, to make sure it doesnt go outside
+        angle (float): The desired angle of all cuts, defined as the total angle of the cut, between two ramps
     """
-    cut_slope = math.tan(math.radians(angle))
-    half_min_width = min_cut_width / 2
+    ha = angle / 2
+    hw = cut_root_width / 2
+    cs = math.tan(math.radians(ha))
+
+    with BuildSketch() as cutter:
+        for ci, (cx, cy) in enumerate(cuts):
+            dy = cy - neutral_y
+            dx = abs(dy / cs)
+            if dx * 2 + cut_root_width > max_cutter_width:
+                # cap dx, requiring extra points
+                dx = (max_cutter_width - cut_root_width) / 2
+                dy = abs(dx / cs)
+
+                with BuildLine():
+                    Polyline(
+                        (cx - hw - dx, neutral_y),
+                        (cx + hw + dx, neutral_y),
+                        (cx + hw + dx, cy + dy),
+                        (cx + hw, cy),
+                        (cx - hw, cy),
+                        (cx - hw - dx, cy + dy),
+                        (cx - hw - dx, neutral_y),
+                    )
+                make_face()
+
+            else:
+                with BuildLine():
+                    Polyline(
+                        (cx - hw - dx, neutral_y),
+                        (cx + hw + dx, neutral_y),
+                        (cx + hw, cy),
+                        (cx - hw, cy),
+                        (cx - hw - dx, neutral_y),
+                    )
+                make_face()
+
+    return cutter.sketch
+
+
+def smooth_angled_cutter(cuts: list[tuple[float, float]], cut_root_width: float, neutral_y: float, angle: float) -> Sketch:
+    """Generates a specialized cutter with a fixed angle. The angled cut is placed halfway between two adjacent cuts, and cut root width is enforced.
+
+    Args:
+        cuts (list[tuple[float, float]]): A list of cut centers, specified as (x, y)
+        cut_root_width (float): The minimum width a cut should be, used to validate if the cuts are possible
+        neutral_y (float): The default neutral position for ramp in and ramp out, typically the Y value of the top of the key with a little cushion to close the shape.
+        angle (float): The desired angle of all cuts, defined as the total angle of the cut, between two ramps
+    """
+    ha = angle / 2
+    hw = cut_root_width / 2
+    cs = math.tan(math.radians(ha))
+
+    def add_cut(cuts: list[tuple[float, float]], x: float, y: float, w: float, signum: float = 1.0):
+        cuts.append((x - math.copysign(w, signum), y))
+        cuts.append((x + math.copysign(w, signum), y))
+
+    def add_neutral_cut(cuts: list[tuple[float, float]], x: float, y: float, w: float, signum: float = 1.0):
+        hw = w / 2
+        dy = y - neutral_y
+        dx = abs(dy / cs)
+        cuts.append((x + math.copysign(hw + dx, signum), neutral_y))
 
     cut_points: list[tuple[float, float]] = []
+    signum = cuts[1][0] - cuts[0][0]  # Used to define the direction we are building in
 
-    # calculate leading angled cut
-    c0_y = cuts[0][1]
-    dy = c0_y - neutral_y
-    dx = abs(dy / cut_slope)
-    cut_points.append((cuts[0][0] - half_min_width - dx, neutral_y))
-
-    def append_segment(p: list[tuple[float, float]], x: float, y: float):
-        p.append((x - half_min_width, y))
-        p.append((x + half_min_width, y))
+    add_neutral_cut(cut_points, cuts[0][0], cuts[0][1], cut_root_width, -signum)
 
     # iterates (c0,c1),(c1,c2),(c2,c3), etc..
-    for (c0x, c0y), (c1x, c1y) in zip(cuts[0:-1], cuts[1:]):
+    for ci, ((c0x, c0y), (c1x, c1y)) in enumerate(zip(cuts[0:-1], cuts[1:])):
         # first make a segment for the c0 cut
-        append_segment(cut_points, c0x, c0y)
+        add_cut(cut_points, c0x, c0y, hw, signum)
 
-        intercut_change = c1y - c0y
-        if intercut_change != 0:
-            intercut_space = c1x - c0x - min_cut_width
-            intercut_midpoint = (c1x - c0x) / 2
-            angled_cut_space = abs(intercut_change / cut_slope)
+        dy = c1y - c0y
+        # we only make angled cuts if theres a change in height
+        if dy != 0:
+            sx = abs(c1x - c0x) - cut_root_width  # space available to cut the angle
+            hs = abs(c1x - c0x) / 2  # length to midpoint between the cuts
+            dx = abs(dy / cs)  # change in x needed to make the angled cut
 
-            if angled_cut_space > intercut_space:
-                raise ValueError(f"Unable to make angled cut. [Space required = {angled_cut_space}, available = {intercut_space}]")
+            # if the available space is equal to the needed space, this is a MACS cut
+            # and our normal cut adds will add the point
+            if not math.isclose(dx, sx):
+                if dx > sx:
+                    raise ValueError(f"Angled cut impossible with available space. Cut #{ci}, Required={dx}, Available={sx}, c0=({c0x},{c0y}), c1=({c1x},{c1y})")
 
-            c_0ax = c0x + (intercut_midpoint - angled_cut_space / 2)
-            c_1ax = c0x + (intercut_midpoint + angled_cut_space / 2)
+                c_0ax = c0x + math.copysign(hs - dx / 2, signum)
+                c_1ax = c0x + math.copysign(hs + dx / 2, signum)
 
-            cut_points.append((c_0ax, c0y))
-            cut_points.append((c_1ax, c1y))
+                cut_points.append((c_0ax, c0y))
+                cut_points.append((c_1ax, c1y))
 
         # add segment for c1 cut
-        append_segment(cut_points, c1x, c1y)
+        add_cut(cut_points, c1x, c1y, hw, signum)
 
     # calculate trailing angled cut
-    cl_y = cuts[-1][1]
-    dy = cl_y - neutral_y
-    dx = abs(dy / cut_slope)
-    cut_points.append((cuts[-1][0] + dx + half_min_width, neutral_y))
+    add_neutral_cut(cut_points, cuts[-1][0], cuts[-1][1], cut_root_width, signum)
 
     with BuildSketch() as cutter:
         with BuildLine():
@@ -86,68 +116,20 @@ def angled_cutter(cuts: list[tuple[float, float]], min_cut_width: float, neutral
     return cutter.sketch
 
 
-def angled_cutter_with_widths(cuts: list[tuple[float, float]], min_cut_widths: list[float], neutral_y: float, angle: float):
-    """Generates a specialized cutter with a fixed angle. The angled cut is placed halfway between two adjacent cuts.
+def lever_cutter(cuts: list[tuple[float, float, float]], neutral_y: float) -> Sketch:
+    """Generates a rectangular shaped cutter for use with lever lock keys.
 
     Args:
-        cuts (list[tuple[float, float]]): A list of cut centers, specified as (x, y)
-        min_cut_widths (list[float]): The minimum width a cut should be, used to validate if the cuts are possible
-        neutral_y (float): The default neutral position for ramp in and ramp out, typically the Y value of the top of the key with a little cushion to close the shape.
-        angle (float): The desired angle of all cuts, defined as the angle between the ramps and a the bottom of the bitting
+        cuts (list[tuple[float, float, float]]): A list of cut centers with cut width, specified as (x,y,width)
+        neutral_y (float): The default neutral position for the top of the cutter, typically the Y value of the top of the key with a little cushion to close the shape.
     """
-    if len(cuts) != len(min_cut_widths):
-        raise ValueError("Angled cutter widths not the same length as cuts")
-
-    cut_slope = math.tan(math.radians(angle))
-    cut_points: list[tuple[float, float]] = []
-
-    # calculate leading angled cut
-    half_min_width = min_cut_widths[0] / 2
-    c0_y = cuts[0][1]
-    dy = c0_y - neutral_y
-    dx = abs(dy / cut_slope)
-    cut_points.append((cuts[0][0] - half_min_width - dx, neutral_y))
-
-    def append_segment(p: list[tuple[float, float]], x: float, y: float, width: float):
-        p.append((x - width / 2, y))
-        p.append((x + width / 2, y))
-
-    # iterates (c0,c1),(c1,c2),(c2,c3), etc..
-    i = 0
-    for (c0x, c0y), (c1x, c1y) in zip(cuts[0:-1], cuts[1:]):
-        min_width = min_cut_widths[i]
-
-        # first make a segment for the c0 cut
-        append_segment(cut_points, c0x, c0y, min_width)
-
-        intercut_change = c1y - c0y
-        if intercut_change != 0:
-            intercut_space = c1x - c0x - min_width / 2
-            intercut_midpoint = (c1x - c0x) / 2
-            angled_cut_space = abs(intercut_change / cut_slope)
-
-            if angled_cut_space > intercut_space:
-                raise ValueError(f"Unable to make angled cut. [Cut {i}, Space required = {angled_cut_space}, available = {intercut_space}, min = {min_width}]")
-
-            c_0ax = c0x + (intercut_midpoint - angled_cut_space / 2)
-            c_1ax = c0x + (intercut_midpoint + angled_cut_space / 2)
-
-            cut_points.append((c_0ax, c0y))
-            cut_points.append((c_1ax, c1y))
-
-        # add segment for c1 cut
-        append_segment(cut_points, c1x, c1y, min_width)
-        i += 1
-
-    # calculate trailing angled cut
-    half_min_width = min_cut_widths[-1] / 2
-    cl_y = cuts[-1][1]
-    dy = cl_y - neutral_y
-    dx = abs(dy / cut_slope)
-    cut_points.append((cuts[-1][0] + dx + half_min_width, neutral_y))
 
     with BuildSketch() as cutter:
-        with BuildLine():
-            Polyline(cut_points)
-        make_face()
+        for cx, cy, cw in cuts:
+            yh = abs(neutral_y - cy)
+            yc = neutral_y - (neutral_y - cy) / 2
+
+            with Locations((cx, yc)):
+                Rectangle(cw, yh)
+
     return cutter.sketch

@@ -15,7 +15,7 @@ class SR(key.Key):
     SR_CUT_SPACINGS = [i * 2.25 * MM + 5.5 * MM for i in range(11)]
     SR_CUT_DEPTHS = [0 * MM, 0.625 * MM, 1.575 * MM, 2 * MM]  # last cut jumps to 2mm based on known cuts
     SR_CUT_WIDTH = 1 * MM
-    SR_CUT_ANGLE = 60
+    SR_CUT_ANGLE = 120
 
     @classmethod
     def name(cls) -> str:
@@ -139,7 +139,7 @@ class SR(key.Key):
             cut_y = cls.SR_KEY_Y_DATUM + cls.SR_CUT_DEPTHS[depth_index]
             cut_points.append((cut_x, cut_y))
 
-        angled_cutter = key_cutters.angled_cutter(cut_points, cls.SR_CUT_WIDTH, cls.SR_KEY_Y_DATUM - 0.25 * MM, cls.SR_CUT_ANGLE)
+        angled_cutter = key_cutters.smooth_angled_cutter(cut_points, cls.SR_CUT_WIDTH, cls.SR_KEY_Y_DATUM - 0.25 * MM, cls.SR_CUT_ANGLE)
 
         with BuildPart() as sr_key:
             add(sr_blank)

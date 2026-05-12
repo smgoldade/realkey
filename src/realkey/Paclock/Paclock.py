@@ -10,6 +10,7 @@ class PR1(key.Key):
     PR1_KEY_Y_DATUM = 9 * MM
     PR1_KEY_CUT_SPACINGS = [i * 0.1375 * IN + 0.145 * IN for i in range(7)]
     PR1_KEY_CUT_DEPTHS = [i * IN for i in [0.2840, 0.2684, 0.2450, 0.2215, 0.1981, 0.1747]]
+    PR1_KEY_CUT_WIDTH = 0.065 * IN
 
     @classmethod
     def name(cls) -> str:
@@ -83,17 +84,33 @@ class PR1(key.Key):
     def key(cls, profile: str, keyway: str, bitting: str) -> Part:
         cls.validate_bitting(profile, keyway, bitting)
 
-        a_key = cls.blank(profile, keyway)
-        cutter = key_cutters.hpc_cw1011()
-        if cutter is None:
-            raise ValueError("Unable to build key cutter")
+        pr1_blank = cls.blank(profile, keyway)
 
+        cuts: list[tuple[float, float]] = []
         for i, cut in enumerate(bitting):
+            depth_index = int(cut) - 1
+
             cut_x = cls.PR1_KEY_X_DATUM + cls.PR1_KEY_CUT_SPACINGS[i]
-            cut_y = cls.PR1_KEY_Y_DATUM + cls.PR1_KEY_CUT_DEPTHS[int(cut) - 1]
+            cut_y = cls.PR1_KEY_Y_DATUM + cls.PR1_KEY_CUT_DEPTHS[depth_index]
 
-            # Cuts are .065 inches width, so we make 2 cuts pre and post to widen to .065 inches
-            a_key -= Pos(cut_x - 0.010 * IN, cut_y, 0) * cutter
-            a_key -= Pos(cut_x + 0.010 * IN, cut_y, 0) * cutter
+            cuts.append((cut_x, cut_y))
 
-        return Part(a_key, "Paclock PR1 Key")
+        cutter = key_cutters.angled_cutter(cuts, cls.PR1_KEY_CUT_WIDTH, 16.5, 0.25 * IN, 90)
+
+        with BuildPart() as pr1_key:
+            add(pr1_blank)
+
+            with BuildSketch() as pr1_cutter:
+                add(cutter)
+            extrude(amount=cls.PR1_KEY_WIDTH * 2, mode=Mode.SUBTRACT)
+        show_all()
+        return Part(pr1_key.part)
+
+
+if __name__ == "__main__":
+    from ocp_vscode import *
+
+    # blank = SG44XXGuard.blank("87h", "lever")
+    key = PR1.key("pro", "pr1", "6262626")
+    # show_all()
+    # export_step(key, "guard_key.step")
