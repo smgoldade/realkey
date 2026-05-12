@@ -91,7 +91,6 @@ class SG44XXGuard(key.Key):
 
                     with Locations((cut_x, cut_y)):
                         Rectangle(cls.SG44XX_CUT_WIDTHS[i], cut_depth + 0.0005 * MM)
-            show_all()
             extrude(amount=cls.SG44XX_KEY_WIDTH * 2, mode=Mode.SUBTRACT)
         show_all()
         return Part(sg_key.part)
