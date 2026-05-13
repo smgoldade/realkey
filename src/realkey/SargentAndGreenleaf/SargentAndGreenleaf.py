@@ -24,7 +24,7 @@ class SGLever(key.Key):
     SG_X_DATUM = {"87h": 59.936 * MM, "87h_45xx": 59.936 * MM, "9609": 2.145 * IN}
     SG_Y_DATUM = {"87h": 8.45 * MM, "87h_45xx": 8.45 * MM, "9609": 0.395 * IN}
 
-    SG_THROAT_SPACING = {"87h": 1.0775 * IN, "87h_45xx": 1.0775 * IN, "9609": 1.0775 * IN}
+    SG_THROAT_SPACING = {"87h": 1.0775 * IN, "87h_45xx": 1.0775 * IN, "9609": 1.1400 * IN}
     SG_THROAT_Y_DATUM = {"87h": 8.45 * MM, "87h_45xx": 8.45 * MM, "9609": 0.325 * IN}
     SG_THROAT_DEPTH = {"87h": 0.075 * IN, "87h_45xx": 0.040 * IN, "9609": 0.080 * IN}
     SG_THROAT_WIDTH = {"87h": 0.105 * IN, "87h_45xx": 0.105 * IN, "9609": 0.105 * IN}
