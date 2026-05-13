@@ -27,6 +27,7 @@
         "{FROM}/SargentAndGreenleaf/SargentAndGreenleaf.py" : "{TO}/SargentAndGreenleaf/SargentAndGreenleaf.py",
 
         "resources/SargentAndGreenleaf/87H.step": "resources/SargentAndGreenleaf/87H.step",
+        "resources/SargentAndGreenleaf/9609.step": "resources/SargentAndGreenleaf/9609.step",
         "resources/ASSA/Desmo.svg" : "resources/ASSA/Desmo.svg",
         "resources/MIWA/SR.svg" : "resources/MIWA/SR.svg",
         "resources/Opnus/Memolis.svg" : "resources/Opnus/Memolis.svg",

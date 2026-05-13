@@ -20,6 +20,7 @@ sys.modules["build123d"] = bogus123d
 # - Anything else is fine, and we should have reasonable implementations
 bogus123d.MM = 1
 bogus123d.IN = 25.4
+bogus123d.THOU = .0254
 bogus123d.Part = None
 bogus123d.Sketch = None
 
