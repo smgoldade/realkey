@@ -29,6 +29,8 @@ class SGLever(key.Key):
     SG_THROAT_DEPTH = {"87h": 0.075 * IN, "87h_45xx": 0.040 * IN, "9609": 0.080 * IN}
     SG_THROAT_WIDTH = {"87h": 0.105 * IN, "87h_45xx": 0.105 * IN, "9609": 0.105 * IN}
 
+    SG_GUARD_TIP_DEPTH = {"87h": 0.188 * IN, "87h_45xx": 0.188 * IN, "9609": 0.193 * IN}
+
     @classmethod
     def name(cls) -> str:
         return "sg_lever"
@@ -110,9 +112,10 @@ class SGLever(key.Key):
         # Add throat
         lever_cuts.append((x_datum - throat_spacing, throat_y_datum + throat_depth, throat_width))
 
-        # Tip snip for 45xx
-        if profile == "87h_45xx":
-            lever_cuts.append((x_datum + 0.2 * IN, y_datum + 0.5 * IN, 0.226 * IN))
+        # Tip snip for guard keys
+        if profile in cls.SG_GUARD_TIP_DEPTH:
+            depth = cls.SG_GUARD_TIP_DEPTH[profile]
+            lever_cuts.append((x_datum + 0.2 * IN, y_datum + depth, 0.4 * IN))
 
         lever_cutter = key_cutters.lever_cutter(lever_cuts, throat_y_datum - 0.001 * MM)
 
