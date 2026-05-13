@@ -17,7 +17,7 @@ class SGLever(key.Key):
     SG_CUT_DEPTHS = {
         "87h": [i * 0.020 * IN for i in range(8)],
         "87h_45xx": [i * 0.020 * IN for i in range(8)],
-        "9609": [i * 0.020 * IN for i in range(8)],
+        "9609": [i * 0.020 * IN + 0.005 * IN for i in range(8)],
     }
 
     SG_KEY_WIDTH = {"87h": 0.080 * IN, "87h_45xx": 0.080 * IN, "9609": 0.070 * IN}
