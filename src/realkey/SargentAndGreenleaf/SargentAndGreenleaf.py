@@ -92,7 +92,6 @@ class SG44XXGuard(key.Key):
             with BuildSketch():
                 add(lever_cutter)
             extrude(amount=cls.SG44XX_KEY_WIDTH * 2, mode=Mode.SUBTRACT)
-        show_all()
         return Part(sg_key.part)
 
 
@@ -100,5 +99,5 @@ if __name__ == "__main__":
     from ocp_vscode import *
 
     # blank = SG44XXGuard.blank("87h", "lever")
-    key = SG44XXGuard.key("87h", "lever", "67067")
+    key = SG44XXGuard.key("87h", "lever", "24622")
     # export_step(key, "guard_key.step")

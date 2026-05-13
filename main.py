@@ -21,6 +21,7 @@ sys.modules["build123d"] = bogus123d
 bogus123d.MM = 1
 bogus123d.IN = 25.4
 bogus123d.Part = None
+bogus123d.Sketch = None
 
 # Jump into realkey
 from realkey import realkey
