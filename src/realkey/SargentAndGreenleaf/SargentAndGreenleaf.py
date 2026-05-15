@@ -86,9 +86,6 @@ class SGLever(key.Key):
             blank = step_blank.part
         elif profile == "60":
             with BuildPart() as step_blank:
-                #with BuildSketch():
-                #    add(import_svg("resources/SargentAndGreenleaf/1063B.svg"))
-                #make_face()
                 add(import_step("resources/SargentAndGreenleaf/60.step"))
             blank = step_blank.part
         else:

@@ -3,7 +3,7 @@ from pyscript.ffi import to_js
 from pyscript.js_modules import key3d
 from js import URL, Blob
 
-import binascii
+import binascii, html
 from realkey.Common import key
 from realkey.ASSA import ASSA
 from realkey.MIWA import MIWA
@@ -199,7 +199,7 @@ def save_shared(blob, extension: str):
 
     url = URL.createObjectURL(blob)
     hidden_link = document.createElement("a")
-    hidden_link.setAttribute("download", f"{key}_{profile}_{keyway}_{bitting}.{extension}")
+    hidden_link.setAttribute("download", html.unescape(f"{key}_{profile}_{keyway}_{bitting}.{extension}"))
     hidden_link.setAttribute("href", url)
     hidden_link.click()
     URL.revokeObjectURL(url)
