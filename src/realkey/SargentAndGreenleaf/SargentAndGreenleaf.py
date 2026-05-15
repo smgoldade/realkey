@@ -5,34 +5,89 @@ from realkey.Common import key_cutters, key
 
 class SGLever(key.Key):
     SG_CUT_SPACINGS = {
-        "87h": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.378 * IN],
-        "87h_45xx": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.367 * IN, 0.415 * IN, 0.470 * IN],
-        "9609": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.378 * IN],
         "60": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.367 * IN, 0.422 * IN],
+        "87h": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.378 * IN],
+        "87h_7cut": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.367 * IN, 0.415 * IN, 0.470 * IN],
+        "96": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.367 * IN, 0.422 * IN],
+        "96_7cut": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.367 * IN, 0.415 * IN, 0.470 * IN],
+        "9609": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.378 * IN],
     }
     SG_CUT_WIDTHS = {
-        "87h": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
-        "87h_45xx": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
-        "9609": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
         "60": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
+        "87h": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
+        "87h_7cut": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
+        "96": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
+        "96_7cut": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
+        "9609": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
     }
     SG_CUT_DEPTHS = {
-        "87h": [i * 0.020 * IN for i in range(8)],
-        "87h_45xx": [i * 0.020 * IN for i in range(8)],
-        "9609": [i * 0.020 * IN + 0.005 * IN for i in range(8)],
         "60": [0.001 * IN, 0.017 * IN, 0.037 * IN, 0.057 * IN, 0.077 * IN, 0.097 * IN, 0.117 * IN, 0.137 * IN],
+        "87h": [i * 0.020 * IN for i in range(8)],
+        "87h_7cut": [i * 0.020 * IN for i in range(8)],
+        "96": [0.001 * IN, 0.017 * IN, 0.037 * IN, 0.057 * IN, 0.077 * IN, 0.097 * IN, 0.117 * IN, 0.137 * IN],
+        "96_7cut": [0.001 * IN, 0.017 * IN, 0.037 * IN, 0.057 * IN, 0.077 * IN, 0.097 * IN, 0.117 * IN, 0.137 * IN],
+        "9609": [i * 0.020 * IN + 0.005 * IN for i in range(8)],
     }
 
-    SG_KEY_WIDTH = {"87h": 0.080 * IN, "87h_45xx": 0.080 * IN, "9609": 0.070 * IN, "60": 0.070 * IN}
-    SG_X_DATUM = {"87h": 59.936 * MM, "87h_45xx": 59.936 * MM, "9609": 2.145 * IN, "60": 2.15 * IN}
-    SG_Y_DATUM = {"87h": 8.45 * MM, "87h_45xx": 8.45 * MM, "9609": 0.395 * IN, "60" : 0.380 * IN}
+    SG_KEY_WIDTH = {
+        "60": 0.070 * IN,
+        "87h": 0.080 * IN,
+        "87h_7cut": 0.080 * IN,
+        "96": 0.070 * IN,
+        "96_7cut": 0.070 * IN,
+        "9609": 0.070 * IN,
+    }
+    SG_X_DATUM = {
+        "60": 2.15 * IN,
+        "87h": 59.936 * MM,
+        "87h_7cut": 59.936 * MM,
+        "96": 2.15 * IN,
+        "96_7cut": 2.15 * IN,
+        "9609": 2.145 * IN,
+    }
+    SG_Y_DATUM = {
+        "60": 0.380 * IN,
+        "87h": 8.45 * MM,
+        "87h_7cut": 8.45 * MM,
+        "96": 0.3425 * IN,
+        "96_7cut": 0.3425 * IN,
+        "9609": 0.395 * IN,
+    }
 
-    SG_THROAT_SPACING = {"87h": 1.0775 * IN, "87h_45xx": 1.0775 * IN, "9609": 1.1400 * IN, "60": 1.1400 * IN}
-    SG_THROAT_Y_DATUM = {"87h": 8.45 * MM, "87h_45xx": 8.45 * MM, "9609": 0.325 * IN, "60" : 0.305 * IN}
-    SG_THROAT_DEPTH = {"87h": 0.075 * IN, "87h_45xx": 0.040 * IN, "9609": 0.080 * IN, "60" : 0.080 * IN}
-    SG_THROAT_WIDTH = {"87h": 0.105 * IN, "87h_45xx": 0.105 * IN, "9609": 0.105 * IN, "60" : 0.105 * IN}
+    SG_THROAT_SPACING = {
+        "60": 1.1400 * IN,
+        "87h": 1.1300 * IN,
+        "87h_7cut": 1.1300 * IN,
+        "96": 1.1400 * IN,
+        "96_7cut": 1.1400 * IN,
+        "9609": 1.1400 * IN,
+    }
+    SG_THROAT_Y_DATUM = {
+        "60": 0.305 * IN,
+        "87h": 8.45 * MM,
+        "87h_7cut": 8.45 * MM,
+        "96": 0.3425 * IN,
+        "96_7cut": 0.3425 * IN,
+        "9609": 0.325 * IN,
+    }
+    SG_THROAT_DEPTH = {
+        "60": 0.080 * IN,
+        "87h": 0.075 * IN,
+        "87h_7cut": 0.040 * IN,
+        "96": 0.080 * IN,
+        "96_7cut": 0.080 * IN,
+        "9609": 0.080 * IN,
+    }
+    SG_THROAT_WIDTH = {
+        "60": 0.105 * IN,
+        "87h": 0.105 * IN,
+        "87h_7cut": 0.105 * IN,
+        "96": 0.105 * IN,
+        "96_7cut": 0.105 * IN,
+        "9609": 0.105 * IN,
+    }
 
-    SG_GUARD_TIP_DEPTH = {"87h": 0.188 * IN, "87h_45xx": 0.188 * IN, "9609": 0.193 * IN}
+    SG_GUARD_TIP_DEPTH = {"87h": 0.188 * IN, "87h_7cut": 0.188 * IN, "9609": 0.193 * IN}
 
     @classmethod
     def name(cls) -> str:
@@ -44,7 +99,14 @@ class SGLever(key.Key):
 
     @classmethod
     def profiles(cls) -> dict[str, str]:
-        return {"87h": "87H", "87h_45xx": "87H (45XX)", "9609": "9609", "60" : "60"}
+        return {
+            "60": "60",
+            "87h": "87H",
+            "87h_7cut": "87H 7-Cut",
+            "96": "96",
+            "96_7cut": "96 7-Cut",
+            "9609": "9609",
+        }
 
     @classmethod
     def keyways(cls) -> dict[str, str]:
@@ -56,7 +118,24 @@ class SGLever(key.Key):
 
     @classmethod
     def advanced_bitting_definition(cls) -> str | None:
-        return None
+        return (
+            "<h23>S&G Lever Keys</h2>"
+            "<table><caption>Profile</caption>"
+            "<thead>"
+            "<tr><th>Lock Series</th><th>Renter Key</th><th>Guard Key</th>"
+            "</thead>"
+            "<tbody>"
+            "<tr><td>4100 Series</td><td>96 7-Cut</td><td>No guard</td></tr>"
+            "<tr><td>4231</td><td>96</td><td>SY3B</td></tr>"
+            "<tr><td>4420</td><td>96</td><td>87H</td></tr>"
+            "<tr><td>4440</td><td>96</td><td>87H</td></tr>"
+            "<tr><td>4442</td><td>60</td><td>87H</td></tr>"
+            "<tr><td>4443</td><td>60</td><td>9609</td></tr>"
+            "<tr><td>4444</td><td>96</td><td>87H</td></tr>"
+            "<tr><td>4500 Series</td><td>96 7-Cut</td><td>87H 7-Cut</td></tr>"
+            "</tbody>"
+            "</table>"
+        )
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
@@ -64,9 +143,9 @@ class SGLever(key.Key):
             raise ValueError("Only numeric cuts are allowed")
         if profile in ["87h", "9609"] and len(bitting) > 5:
             raise ValueError(f"S&G {cls.profiles()[profile]} has a maximum of 5 cuts")
-        if profile in ["60"] and len(bitting) > 6:
-            raise ValueError(f"S&G {cls.profiles()[profile]} has a maximum of 7 cuts")
-        if profile in ["87h_45xx"] and len(bitting) > 7:
+        if profile in ["60", "96"] and len(bitting) > 6:
+            raise ValueError(f"S&G {cls.profiles()[profile]} has a maximum of 6 cuts")
+        if profile in ["87h_7cut", "96_7cut"] and len(bitting) > 7:
             raise ValueError(f"S&G {cls.profiles()[profile]} has a maximum of 7 cuts")
 
         for cut in bitting:
@@ -76,17 +155,21 @@ class SGLever(key.Key):
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
         blank = None
-        if profile in ["87h", "87h_45xx"]:
+        if profile == "60":
+            with BuildPart() as step_blank:
+                add(import_step("resources/SargentAndGreenleaf/60.step"))
+            blank = step_blank.part
+        elif profile in ["87h", "87h_7cut"]:
             with BuildPart() as step_blank:
                 add(import_step("resources/SargentAndGreenleaf/87H.step"))
+            blank = step_blank.part
+        elif profile in ["96", "96_7cut"]:
+            with BuildPart() as step_blank:
+                add(import_step("resources/SargentAndGreenleaf/96.step"))
             blank = step_blank.part
         elif profile == "9609":
             with BuildPart() as step_blank:
                 add(import_step("resources/SargentAndGreenleaf/9609.step"))
-            blank = step_blank.part
-        elif profile == "60":
-            with BuildPart() as step_blank:
-                add(import_step("resources/SargentAndGreenleaf/60.step"))
             blank = step_blank.part
         else:
             raise NotImplementedError("Ha, that profile is not available yet!")
@@ -141,6 +224,6 @@ if __name__ == "__main__":
     from ocp_vscode import *
 
     # blank = SGLever.blank("87h", "lever")
-    key = SGLever.key("60", "lever", "205757")
+    key = SGLever.key("96_7cut", "lever", "1205757")
     show_all()
     # export_step(key, "guard_key.step")
