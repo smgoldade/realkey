@@ -119,7 +119,7 @@ class SGLever(key.Key):
     @classmethod
     def advanced_bitting_definition(cls) -> str | None:
         return (
-            "<h23>S&G Lever Keys</h2>"
+            "<h2>S&G Lever Keys</h2>"
             "<table><caption>Profile</caption>"
             "<thead>"
             "<tr><th>Lock Series</th><th>Renter Key</th><th>Guard Key</th>"
