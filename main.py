@@ -27,4 +27,4 @@ bogus123d.Sketch = None
 # Jump into realkey
 from realkey import realkey
 
-realkey.main(keygen)
+await realkey.main(keygen)
