@@ -40,8 +40,7 @@
         <div id="header">
             <h1 id="header-text">realkey</h1>
             <div id="header-right">
-                
-                <button class="info-button" popovertarget="about-dialog"><i class="fa-regular fa-circle-question"></i></button>
+                <button class="info-button" popovertarget="about-dialog" title="About realkey"><i class="fa-regular fa-circle-question"></i></button>
             </div>
         </div>
         <div id="main">
@@ -83,8 +82,9 @@
                     <span id="model-overlay"></span>
                 </div>
                 <p>
-                    <button id="save-stl" class="red-button" disabled><i class="fa-solid fa-download"></i> STL</button>
-                    <button id="save-step" class="red-button" disabled><i class="fa-solid fa-download"></i> STEP</button>
+                    <button id="save-stl" class="red-button" title="Download STL" disabled><i class="fa-solid fa-download"></i> STL</button>
+                    <button id="save-step" class="red-button" title="Download STEP" disabled><i class="fa-solid fa-download"></i> STEP</button>
+                    <button id="copy-link" class="green-button" title="Copy link" disabled><i class="fa-solid fa-link"></i></i></button>
                 </p>
                 <div>
                     <span style="height: 15px; font-size: 10px; color:#555">Left click to orbit, right click to pan, scrollwheel to zoom</span>
@@ -137,11 +137,11 @@
                 </details>
             </p>
             <p>For more information, checkout the github page!</p>
-            <h2><a href="https://github.com/smgoldade/realkey" target="_blank"><i class="fa-brands fa-github"></i></a></h2>
+            <h2><a href="https://github.com/smgoldade/realkey" title="realkey GitHub" target="_blank"><i class="fa-brands fa-github"></i></a></h2>
         </div>
     </dialog>
     <dialog id="advanced-bitting-dialog" popover>
-        <div style="float: right;"><button class="info-button" popovertarget="advanced-bitting-dialog" popovertargetaction="hide"><i class="fa-solid fa-xmark"></i></button></div>
+        <div style="float: right;"><button class="info-button" popovertarget="advanced-bitting-dialog" popovertargetaction="hide" title="Get advanced bitting info"><i class="fa-solid fa-xmark"></i></button></div>
         <div id="advanced-bitting-info" class="scrollable-dialog"></div>
     </dialog>
 </body>

@@ -3,7 +3,7 @@ from build123d import *
 from realkey.Common import key_cutters, key
 
 
-class SGLever(key.Key):
+class SGSDB(key.Key):
     SG_CUT_SPACINGS = {
         "60": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.367 * IN, 0.422 * IN],
         "87h": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.378 * IN],
@@ -11,6 +11,7 @@ class SGLever(key.Key):
         "96": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.367 * IN, 0.422 * IN],
         "96_7cut": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.367 * IN, 0.415 * IN, 0.470 * IN],
         "9609": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.378 * IN],
+        "sy3b": [0.167 * IN, 0.222 * IN, 0.271 * IN, 0.319 * IN, 0.378 * IN],
     }
     SG_CUT_WIDTHS = {
         "60": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
@@ -19,6 +20,7 @@ class SGLever(key.Key):
         "96": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
         "96_7cut": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
         "9609": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
+        "sy3b": [0.066 * IN, 0.052 * IN, 0.052 * IN, 0.052 * IN, 0.066 * IN],
     }
     SG_CUT_DEPTHS = {
         "60": [0.001 * IN, 0.017 * IN, 0.037 * IN, 0.057 * IN, 0.077 * IN, 0.097 * IN, 0.117 * IN, 0.137 * IN],
@@ -27,6 +29,7 @@ class SGLever(key.Key):
         "96": [0.001 * IN, 0.017 * IN, 0.037 * IN, 0.057 * IN, 0.077 * IN, 0.097 * IN, 0.117 * IN, 0.137 * IN],
         "96_7cut": [0.001 * IN, 0.017 * IN, 0.037 * IN, 0.057 * IN, 0.077 * IN, 0.097 * IN, 0.117 * IN, 0.137 * IN],
         "9609": [i * 0.020 * IN + 0.005 * IN for i in range(8)],
+        "sy3b": [i * 0.020 * IN for i in range(8)],
     }
 
     SG_KEY_WIDTH = {
@@ -36,6 +39,7 @@ class SGLever(key.Key):
         "96": 0.070 * IN,
         "96_7cut": 0.070 * IN,
         "9609": 0.070 * IN,
+        "sy3b": 0.063 * IN,
     }
     SG_X_DATUM = {
         "60": 2.15 * IN,
@@ -44,6 +48,7 @@ class SGLever(key.Key):
         "96": 2.15 * IN,
         "96_7cut": 2.15 * IN,
         "9609": 2.145 * IN,
+        "sy3b": 2.15 * IN
     }
     SG_Y_DATUM = {
         "60": 0.380 * IN,
@@ -52,6 +57,7 @@ class SGLever(key.Key):
         "96": 0.3425 * IN,
         "96_7cut": 0.3425 * IN,
         "9609": 0.395 * IN,
+        "sy3b": 0.3785 * IN,
     }
 
     SG_THROAT_SPACING = {
@@ -61,6 +67,7 @@ class SGLever(key.Key):
         "96": 1.1400 * IN,
         "96_7cut": 1.1400 * IN,
         "9609": 1.1400 * IN,
+        "sy3b": 1.1300 * IN,
     }
     SG_THROAT_Y_DATUM = {
         "60": 0.305 * IN,
@@ -69,6 +76,7 @@ class SGLever(key.Key):
         "96": 0.3425 * IN,
         "96_7cut": 0.3425 * IN,
         "9609": 0.325 * IN,
+        "sy3b": 0.350 * IN,
     }
     SG_THROAT_DEPTH = {
         "60": 0.080 * IN,
@@ -77,6 +85,7 @@ class SGLever(key.Key):
         "96": 0.080 * IN,
         "96_7cut": 0.080 * IN,
         "9609": 0.080 * IN,
+        "sy3b": 0.043 * IN,
     }
     SG_THROAT_WIDTH = {
         "60": 0.105 * IN,
@@ -85,28 +94,22 @@ class SGLever(key.Key):
         "96": 0.105 * IN,
         "96_7cut": 0.105 * IN,
         "9609": 0.105 * IN,
+        "sy3b": 0.105 * IN,
     }
 
-    SG_GUARD_TIP_DEPTH = {"87h": 0.188 * IN, "87h_7cut": 0.188 * IN, "9609": 0.193 * IN}
+    SG_GUARD_TIP_DEPTH = {"87h": 0.188 * IN, "87h_7cut": 0.188 * IN, "9609": 0.193 * IN, "sy3b": 0.156 * IN}
 
     @classmethod
     def name(cls) -> str:
-        return "sg_lever"
+        return "sg_sdb"
 
     @classmethod
     def display_name(cls) -> str:
-        return "S&G Lever"
+        return "S&G Safe Deposit Box"
 
     @classmethod
     def profiles(cls) -> dict[str, str]:
-        return {
-            "60": "60",
-            "87h": "87H",
-            "87h_7cut": "87H 7-Cut",
-            "96": "96",
-            "96_7cut": "96 7-Cut",
-            "9609": "9609",
-        }
+        return {"60": "60", "87h": "87H", "87h_7cut": "87H 7-Cut", "96": "96", "96_7cut": "96 7-Cut", "9609": "9609", "sy3b": "SY3B"}
 
     @classmethod
     def keyways(cls) -> dict[str, str]:
@@ -119,7 +122,9 @@ class SGLever(key.Key):
     @classmethod
     def advanced_bitting_definition(cls) -> str | None:
         return (
-            "<h2>S&G Lever Keys</h2>"
+            "<h2>S&G Safe Deposit Box Keys</h2>"
+            "These are keys for S&G lever locks used in safe deposit boxes. Decoding can be done by looking at the levers on most S&G as they are labelled, except for the rekeyable 41XX and 45XX which need examination."
+            "<div class='even-flex'>"
             "<table><caption>Profile</caption>"
             "<thead>"
             "<tr><th>Lock Series</th><th>Renter Key</th><th>Guard Key</th>"
@@ -135,13 +140,32 @@ class SGLever(key.Key):
             "<tr><td>4500 Series</td><td>96 7-Cut</td><td>87H 7-Cut</td></tr>"
             "</tbody>"
             "</table>"
+            "<table><caption>Common Guard Keys</caption>"
+            "<thead>"
+            "<tr><th>Description</th><th>Bitting</th>"
+            "</thead>"
+            "<tbody>"
+            "<tr><td>#3</td><td>40624</td>"
+            "<tr><td>#4</td><td>20462</td>"
+            "<tr><td>#7</td><td>26024</td>"
+            "<tr><td>#8</td><td>26402</td>"
+            "<tr><td>#12</td><td>04624</td>"
+            "<tr><td>#52</td><td>0240262</td>"
+            "<tr><td>#74</td><td>2204622</td>"
+            "<tr><td>P4</td><td><i>24422</i> - Suspect</td>"
+            "<tr><td>P101</td><td>64042</td>"
+            "<tr><td>ST4</td><td>20462</td>"
+            "<tr><td>SY3</td><td>20024</td>"
+            "</tbody>"
+            "</table>"
+            "</div>"
         )
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
         if not bitting.isnumeric():
             raise ValueError("Only numeric cuts are allowed")
-        if profile in ["87h", "9609"] and len(bitting) > 5:
+        if profile in ["87h", "9609", "sy3b"] and len(bitting) > 5:
             raise ValueError(f"S&G {cls.profiles()[profile]} has a maximum of 5 cuts")
         if profile in ["60", "96"] and len(bitting) > 6:
             raise ValueError(f"S&G {cls.profiles()[profile]} has a maximum of 6 cuts")
@@ -151,7 +175,7 @@ class SGLever(key.Key):
         for cut in bitting:
             if int(cut) < 0 or int(cut) > 7:
                 raise ValueError("Cut depths must be from 0 to 7")
-
+            
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
         blank = None
@@ -171,8 +195,10 @@ class SGLever(key.Key):
             with BuildPart() as step_blank:
                 add(import_step("resources/SargentAndGreenleaf/9609.step"))
             blank = step_blank.part
-        else:
-            raise NotImplementedError("Ha, that profile is not available yet!")
+        elif profile == "sy3b":
+            with BuildPart() as step_blank:
+                add(import_step("resources/SargentAndGreenleaf/SY3B.step"))
+            blank = step_blank.part
         if blank is None:
             raise ValueError("Issue loading blank")
         return Part(blank)
@@ -224,6 +250,6 @@ if __name__ == "__main__":
     from ocp_vscode import *
 
     # blank = SGLever.blank("87h", "lever")
-    key = SGLever.key("96_7cut", "lever", "1205757")
+    key = SGSDB.key("sy3b", "lever", "20462")
     show_all()
     # export_step(key, "guard_key.step")

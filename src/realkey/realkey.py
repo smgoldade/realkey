@@ -1,9 +1,9 @@
-from pyscript import document, web, when, workers
+from pyscript import document, web, when
 from pyscript.ffi import to_js
 from pyscript.js_modules import key3d
-from js import URL, Blob
+from js import Blob, navigator, URL, URLSearchParams, window
 
-import binascii, html
+import binascii, urllib.parse
 from realkey.Common import key
 from realkey.ASSA import ASSA
 from realkey.MIWA import MIWA
@@ -22,6 +22,7 @@ bitting: web.ElementCollection = web.page["bitting"]
 generate: web.ElementCollection = web.page["generate"]
 save_stl: web.ElementCollection = web.page["save-stl"]
 save_step: web.ElementCollection = web.page["save-step"]
+copy_link: web.ElementCollection = web.page["copy-link"]
 info: web.ElementCollection = web.page["info"]
 model_overlay: web.ElementCollection = web.page["model-overlay"]
 advanced_bitting_info: web.ElementCollection = web.page["advanced-bitting-info"]
@@ -31,16 +32,17 @@ stl_blob: Blob = None
 step_blob: Blob = None  # Help me step blob Im stuck
 
 
-def main(bg_keygen):
+async def main(bg_keygen):
     global keygen
     keygen = bg_keygen
     remove_loading()
     load_keys()
+    await apply_search_params()
 
 
 def remove_loading():
     # defaults
-    global profile_select, keyway_select, show_advanced, bitting_instructions, bitting, generate, save_stl, save_step, info, model_overlay, advanced_bitting_info
+    global profile_select, keyway_select, show_advanced, bitting_instructions, bitting, generate, save_stl, save_step, copy_link, info, model_overlay, advanced_bitting_info
 
     disable_element(key_select)
     disable_element(profile_select)
@@ -53,6 +55,7 @@ def remove_loading():
     disable_element(generate)
     disable_element(save_stl)
     disable_element(save_step)
+    disable_element(copy_link)
     info.innerHTML = ""
     model_overlay.innerHTML = ""
     advanced_bitting_info.innerHTML = ""
@@ -66,6 +69,38 @@ def load_keys():
     global key_select
     populate_select(key_select, "Choose a key", {k: v.display_name() for k, v in key.Key._list.items()})
     enable_element(key_select)
+
+
+async def apply_search_params():
+    global key_select, profile_select, keyway_select, bitting
+
+    query_params = URLSearchParams.new(window.location.search)
+    if "key" in query_params:
+        target_key = urllib.parse.unquote(query_params.get("key"))
+        for option in key_select.options:
+            if option.value == target_key:
+                option.selected = True
+                load_profiles_and_keyways()
+                break
+    else:
+        return
+    if "profile" in query_params:
+        target_profile = urllib.parse.unquote(query_params.get("profile"))
+        for option in profile_select.options:
+            if option.value == target_profile:
+                option.selected = True
+                break
+    if "keyway" in query_params:
+        target_keyway = urllib.parse.unquote(query_params.get("keyway"))
+        for option in keyway_select.options:
+            if option.value == target_keyway:
+                option.selected = True
+                break
+    if "bitting" in query_params:
+        target_bitting = urllib.parse.unquote(query_params.get("bitting"))
+        bitting.value = target_bitting
+    if "generate" in query_params:
+        await generate_key()
 
 
 def get_selected_key() -> key.Key | None:
@@ -94,7 +129,7 @@ def get_bitting() -> str:
 
 @when("change", "#key-select")
 def load_profiles_and_keyways():
-    global profile_select, keyway_select, bitting_instructions, bitting, generate, info, model_overlay, save_stl, save_step
+    global profile_select, keyway_select, bitting_instructions, bitting, generate, info, model_overlay, save_stl, save_step, copy_link
     selected_key = get_selected_key()
     info.innerHTML = ""
     model_overlay.innerHTML = ""
@@ -113,6 +148,7 @@ def load_profiles_and_keyways():
         disable_element(generate)
         disable_element(save_stl)
         disable_element(save_step)
+        disable_element(copy_link)
         return
 
     populate_select(profile_select, "", selected_key.profiles())
@@ -152,10 +188,11 @@ def bitting_change():
 
 @when("click", "#generate")
 async def generate_key():
-    global generate, preview, save_stl, save_step, info, model_overlay, keygen, stl_blob, step_blob
+    global generate, preview, save_stl, save_step, copy_link, info, model_overlay, keygen, stl_blob, step_blob
     disable_element(generate)
     disable_element(save_stl)
     disable_element(save_step)
+    disable_element(copy_link)
 
     selected_key = get_selected_key()
     if selected_key is None:
@@ -187,6 +224,7 @@ async def generate_key():
     enable_element(generate)
     enable_element(save_stl)
     enable_element(save_step)
+    enable_element(copy_link)
 
 
 def save_shared(blob, extension: str):
@@ -221,6 +259,31 @@ def save_as_step():
         return
 
     save_shared(step_blob, "step")
+
+
+@when("click", "#copy-link")
+def copy_link_to_clipboard():
+    selected_key = get_selected_key()
+    if selected_key is None:
+        return
+    profile = get_selected_profile()
+    keyway = get_selected_keyway()
+    bitting = get_bitting()
+
+    tmpurl = URL.new(window.location.href)
+    tmpurl.search = ""
+    tmpurl.hash = ""
+
+    url = tmpurl.toString() + "?key=" + urllib.parse.quote(selected_key.name(), safe="")
+    if profile != "null":
+        url += "&profile=" + urllib.parse.quote(profile, safe="")
+    if keyway != "null":
+        url += "&keyway=" + urllib.parse.quote(keyway, safe="")
+    if bitting != "":
+        url += "&bitting=" + urllib.parse.quote(bitting, safe="")
+    url += "&generate"
+
+    navigator.clipboard.writeText(url)
 
 
 def populate_select(select_element: web.ElementCollection, null_string: str, dict: dict[str, str]):
