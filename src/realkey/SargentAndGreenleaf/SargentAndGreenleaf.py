@@ -81,7 +81,7 @@ class SGSDB(key.Key):
     SG_THROAT_DEPTH = {
         "60": 0.080 * IN,
         "87h": 0.075 * IN,
-        "87h_7cut": 0.040 * IN,
+        "87h_7cut": 0.075 * IN,
         "96": 0.080 * IN,
         "96_7cut": 0.080 * IN,
         "9609": 0.080 * IN,
