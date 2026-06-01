@@ -4,7 +4,7 @@ import sys
 # Kick off key generating worker
 display("Loading key generation system...", target="status", append=False)
 keygen = await workers["keygen"]
-await keygen.set_base_url(window.location.origin)
+await keygen.set_base_url(window.location.origin + window.location.pathname)
 display("Loaded!", target="status", append=False)
 
 
