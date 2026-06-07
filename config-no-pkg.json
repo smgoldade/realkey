@@ -9,7 +9,7 @@
         "{PATH}": "./src/realkey",
         "{FROM}": "{PATH}",
         "{TO}": "./realkey",
-        "{FROM}/realkey.py": "{TO}/realkey.py",
+        "{FROM}/realkey_web.py": "{TO}/realkey_web.py",
         "{FROM}/geom_tools.py": "{TO}/geom_tools.py",
         "{FROM}/key_cutters.py": "{TO}/key_cutters.py",
         "{FROM}/key.py": "{TO}/key.py",
@@ -21,6 +21,7 @@
         "{FROM}/MIWA.py": "{TO}/MIWA.py",
         "{FROM}/Opnus.py": "{TO}/Opnus.py",
         "{FROM}/Paclock.py": "{TO}/Paclock.py",
-        "{FROM}/SargentAndGreenleaf.py": "{TO}/SargentAndGreenleaf.py"
+        "{FROM}/SargentAndGreenleaf.py": "{TO}/SargentAndGreenleaf.py",
+        "{FROM}/Schlage.py": "{TO}/Schlage.py"
     }
 }

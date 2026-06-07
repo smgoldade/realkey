@@ -6,8 +6,9 @@ realkey started as a project designed to generate 3D-printable keys for locks wi
 Blanks for keys may be hard to get either due to location or restriction making it hard to key up your favorite lock, and this project hopes to help solve that problem!
 
 ## How It Works
-The primary idea is contained in the [Key](https://github.com/smgoldade/realkey/blob/main/src/realkey/Common/key.py) class, which defines methods that key types should implement.
+The primary idea is contained in the [Key](https://github.com/smgoldade/realkey/blob/main/src/realkey/key.py) class, which defines methods that key types should implement.
 Key models are built up using [build123d](https://github.com/gumyr/build123d), outputting build123d Parts for keys.
+The entire setup is designed to run locally in a web browser. 
 The front end uses [Pyscript](https://pyscript.net) to load defined keys and allow the user to generate models as needed, exporting to the formats build123d supports.
 
 ## How It's Organized

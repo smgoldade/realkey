@@ -69,6 +69,9 @@ class OptionElement(ValueElement):
         else:
             self._web_element.removeAttribute("selected")  # type: ignore
 
+    def __str__(self):
+        return f"{self._web_element.value} : {self._web_element.innerHTML} : {self.selected}"
+
 
 class OptionElementList(list[OptionElement]):
     def __init__(self, iterable: Iterable[OptionElement]) -> None:
@@ -80,26 +83,40 @@ class OptionElementList(list[OptionElement]):
             if option.selected:
                 return option
         return self[0]
-
+    
+    def __str__(self):
+        strs = [str(e) for e in self]
+        return f"[{",".join(strs)}]"
 
 class SelectElement(Element):
     def __init__(self, web_element: web.ElementCollection) -> None:
         super().__init__(web_element)
 
-    def populate(self, null_string: str, options_dict: dict[str, str]):
-        self._web_element.options.clear()
+    def populate(self, null_string: str, options_dict: dict[str, dict[str, str]]):
+        self._web_element.replaceChildren()
         if len(null_string) > 0:
             self._web_element.options.add(value="null", html=null_string)  # type: ignore
-        for value, html in options_dict.items():
-            self._web_element.options.add(value=value, html=html)  # type: ignore
+        for optgroup, options in options_dict.items():
+            if len(optgroup) > 0:
+                group = web.optgroup(label=optgroup)
+                self._web_element.append(group)
+                for value,html in options.items():
+                    opt = web.option(innerHTML=html, value=value)
+                    group.append(opt)  # type: ignore
+            else:
+                for value,html in options.items():
+                    self._web_element.options.add(value=value, html=html)  # type: ignore           
 
     @property
     def options(self) -> OptionElementList:
         options = OptionElementList([])
 
-        for option in self._web_element.options:
-            options.append(OptionElement(option))
-
+        for child in self._web_element.children:
+            if "optgroup" == child.get_tag_name():
+                for child in child.children:
+                    options.append(OptionElement(child))
+            else:
+                options.append(OptionElement(child))
         return options
 
     @property

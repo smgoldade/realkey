@@ -22,12 +22,12 @@ class Key(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def profiles(cls) -> dict[str, str]:
+    def profiles(cls) -> dict[str, dict[str, str]]:
         """Returns the possible profiles for this key"""
     
     @classmethod
     @abc.abstractmethod
-    def keyways(cls) -> dict[str, str]:
+    def keyways(cls) -> dict[str, dict[str, str]]:
         """Returns the possible keyways for this key"""
 
     @classmethod

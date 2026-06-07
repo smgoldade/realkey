@@ -67,7 +67,7 @@ class SGSDB(key.Key):
         "96": 1.1400 * IN,
         "96_7cut": 1.1400 * IN,
         "9609": 1.1400 * IN,
-        "sy3b": 1.1000 * IN,
+        "sy3b": 1.0000 * IN,
     }
     SG_THROAT_Y_DATUM = {
         "60": 0.305 * IN,
@@ -99,6 +99,16 @@ class SGSDB(key.Key):
 
     SG_GUARD_TIP_DEPTH = {"87h": 0.188 * IN, "87h_7cut": 0.188 * IN, "9609": 0.193 * IN, "sy3b": 0.156 * IN}
 
+    SG_PROFILE_LOAD_DICT = {
+        "60": "resources/SargentAndGreenleaf/60.step",
+        "96": "resources/SargentAndGreenleaf/96.step",
+        "96_7cut": "resources/SargentAndGreenleaf/96.step",
+        "87h": "resources/SargentAndGreenleaf/87H.step",
+        "87h_7cut": "resources/SargentAndGreenleaf/87H.step",
+        "9609": "resources/SargentAndGreenleaf/9609.step",
+        "sy3b": "resources/SargentAndGreenleaf/SY3B.step",
+    }
+
     @classmethod
     def name(cls) -> str:
         return "sg_sdb"
@@ -108,12 +118,12 @@ class SGSDB(key.Key):
         return "S&G Safe Deposit Box"
 
     @classmethod
-    def profiles(cls) -> dict[str, str]:
-        return {"60": "60", "87h": "87H", "87h_7cut": "87H 7-Cut", "96": "96", "96_7cut": "96 7-Cut", "9609": "9609", "sy3b": "SY3B"}
+    def profiles(cls) -> dict[str, dict[str, str]]:
+        return {"Renter": {"60": "60", "96": "96", "96_7cut": "96 7-Cut"}, "Guard": {"87h": "87H", "87h_7cut": "87H 7-Cut", "9609": "9609", "sy3b": "SY3B"}}
 
     @classmethod
-    def keyways(cls) -> dict[str, str]:
-        return {"lever": "Lever"}
+    def keyways(cls) -> dict[str, dict[str, str]]:
+        return {"": {"lever": "Lever"}}
 
     @classmethod
     def basic_bitting_definition(cls) -> str:
@@ -178,41 +188,13 @@ class SGSDB(key.Key):
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
-        if profile not in cls.profiles():
-            raise ValueError("Invalid profile specified!")
-        if keyway not in cls.keyways():
-            raise ValueError("Invalid keyway specified!")
-
         blank = None
-        if profile == "60":
-            if not resource_fetcher.pre_fetch_resource("resources/SargentAndGreenleaf/60.step"):
-                raise ValueError("Unable to load S&G 60 Blank")
+        if profile in cls.SG_PROFILE_LOAD_DICT:
+            res = cls.SG_PROFILE_LOAD_DICT[profile]
+            if not resource_fetcher.pre_fetch_resource(res):
+                raise ValueError("Unable to load S&G blank")
             with BuildPart() as step_blank:
-                add(import_step("resources/SargentAndGreenleaf/60.step"))
-            blank = step_blank.part
-        elif profile in ["87h", "87h_7cut"]:
-            if not resource_fetcher.pre_fetch_resource("resources/SargentAndGreenleaf/87H.step"):
-                raise ValueError("Unable to load S&G 87H Blank")
-            with BuildPart() as step_blank:
-                add(import_step("resources/SargentAndGreenleaf/87H.step"))
-            blank = step_blank.part
-        elif profile in ["96", "96_7cut"]:
-            if not resource_fetcher.pre_fetch_resource("resources/SargentAndGreenleaf/96.step"):
-                raise ValueError("Unable to load S&G 96 Blank")
-            with BuildPart() as step_blank:
-                add(import_step("resources/SargentAndGreenleaf/96.step"))
-            blank = step_blank.part
-        elif profile == "9609":
-            if not resource_fetcher.pre_fetch_resource("resources/SargentAndGreenleaf/9609.step"):
-                raise ValueError("Unable to load S&G 9609 Blank")
-            with BuildPart() as step_blank:
-                add(import_step("resources/SargentAndGreenleaf/9609.step"))
-            blank = step_blank.part
-        elif profile == "sy3b":
-            if not resource_fetcher.pre_fetch_resource("resources/SargentAndGreenleaf/SY3B.step"):
-                raise ValueError("Unable to load S&G SY3B Blank")
-            with BuildPart() as step_blank:
-                add(import_step("resources/SargentAndGreenleaf/SY3B.step"))
+                add(import_step(res))
             blank = step_blank.part
         if blank is None:
             raise ValueError("Issue loading blank")

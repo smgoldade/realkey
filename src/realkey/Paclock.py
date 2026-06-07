@@ -21,16 +21,16 @@ class PR1(key.Key):
         return "Paclock PR1"
 
     @classmethod
-    def profiles(cls) -> dict[str, str]:
-        return {"pr1": "PR1 6-pin", "pro": "PRO 7-pin"}
+    def profiles(cls) -> dict[str, dict[str, str]]:
+        return {"": {"pr1": "PR1 6-pin", "pro": "PRO 7-pin"}}
 
     @classmethod
-    def keyways(cls) -> dict[str, str]:
-        return {"pr1": "PR1"}
+    def keyways(cls) -> dict[str, dict[str, str]]:
+        return {"": {"pr1": "PR1"}}
 
     @classmethod
     def basic_bitting_definition(cls) -> str:
-        return "Key cuts are defined from bow to tip with maximum lift as 1 and minimum lift as 6<br><br><i>E.g. 6212121 for a PRO profile.</i>"
+        return "Cuts: Up to 7, defined from bow to tip.<br>Depths: Maximum Lift 1 to Minimum Lift 6<br>Example: <i>6212121</i>"
 
     @classmethod
     def advanced_bitting_definition(cls) -> str | None:
@@ -51,11 +51,6 @@ class PR1(key.Key):
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
-        if profile not in cls.profiles():
-            raise ValueError("Invalid profile specified!")
-        if keyway not in cls.keyways():
-            raise ValueError("Invalid keyway specified!")
-
         if not resource_fetcher.pre_fetch_resource("resources/Paclock/PR1.svg"):
             raise ValueError("Unable to load Paclock SVG")
 

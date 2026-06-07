@@ -26,18 +26,19 @@ class Desmo(key.Key):
         return "ASSA Desmo"
 
     @classmethod
-    def profiles(cls) -> dict[str, str]:
-        return {"6pin": "6-Pin", "8pin": "8-Pin", "10pin": "10-Pin"}
+    def profiles(cls) -> dict[str, dict[str, str]]:
+        return {"": {"6pin": "6-Pin", "8pin": "8-Pin", "10pin": "10-Pin"}}
 
     @classmethod
-    def keyways(cls) -> dict[str, str]:
-        return {"desmo": "Desmo"}
+    def keyways(cls) -> dict[str, dict[str, str]]:
+        return {"": {"desmo": "Desmo"}}
 
     @classmethod
     def basic_bitting_definition(cls) -> str:
         return (
-            "Cuts proceed from right side bow to tip, then left side bow to tip, with 1 being the maximum lift and 6 being the minimum lift<br><br>"
-            "<i>E.g. 145362 represents 145 on the right, 362 on the left</i>"
+            "Cuts: Up to 10, defined from bow to tip, right side before left.<br>"
+            "Depths: Maximum lift 1 to minimum lift 6<br>"
+            "Example: <i>145362 represents 145 on the right, 362 on the left</i>"
         )
 
     @classmethod
@@ -62,11 +63,6 @@ class Desmo(key.Key):
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
-        if profile not in cls.profiles():
-            raise ValueError("Invalid profile specified!")
-        if keyway not in cls.keyways():
-            raise ValueError("Invalid keyway specified!")
-
         if not resource_fetcher.pre_fetch_resource("resources/ASSA/Desmo.svg"):
             raise ValueError("Unable to load ASSA Desmo SVG")
         assa_svg = import_svg("resources/ASSA/Desmo.svg", flip_y=False, label_by="inkscape:label")

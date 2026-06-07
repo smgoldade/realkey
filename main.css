@@ -155,14 +155,18 @@ tr:nth-child(odd) {
 .tab {}
 
 .tab-select {
-    display: inline-block;
+    overflow: hidden;
 }
 
 .tab-select button {
+    min-width: 0px;
+    min-height: 0px;
+
     background-color: inherit;
-    border: none;
-    outline: none;
-    padding: 0.5em;
+    float: left;
+
+    width: 60px;
+    height: 30px;
 }
 
 .tab-select button.active {

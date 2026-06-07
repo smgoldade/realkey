@@ -25,16 +25,20 @@ class SR(key.Key):
         return "MIWA SR"
 
     @classmethod
-    def profiles(cls) -> dict[str, str]:
-        return {"10cut": "10-cut"}
+    def profiles(cls) -> dict[str, dict[str, str]]:
+        return {"": {"10cut": "10-cut"}}
 
     @classmethod
-    def keyways(cls) -> dict[str, str]:
-        return {"sr": "SR"}
+    def keyways(cls) -> dict[str, dict[str, str]]:
+        return {"": {"sr": "SR"}}
 
     @classmethod
     def basic_bitting_definition(cls) -> str:
-        return "Cuts: Up to 10, defined from bow to tip.<br>Depths: Maximum Lift 0 to Minimum Lift 3<br>Example: <i>1101203021</i>"
+        return (
+            "Cuts: Up to 10, defined from bow to tip.<br>"
+            "Depths: Maximum lift 0 to minimum lift 3<br>"
+            "Example: <i>1101203021</i>"
+        )
 
     @classmethod
     def advanced_bitting_definition(cls) -> str | None:
@@ -94,11 +98,6 @@ class SR(key.Key):
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
-        if profile not in cls.profiles():
-            raise ValueError("Invalid profile specified!")
-        if keyway not in cls.keyways():
-            raise ValueError("Invalid keyway specified!")
-
         if not resource_fetcher.pre_fetch_resource("resources/MIWA/SR.svg"):
             raise ValueError("Unable to load MIWA SR SVG")
         miwa_svg = import_svg("resources/MIWA/SR.svg", flip_y=False, label_by="inkscape:label")

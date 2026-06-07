@@ -30,12 +30,12 @@ class SystemD(key.Key):
         return "DOM System D"
 
     @classmethod
-    def profiles(cls) -> dict[str, str]:
-        return {"basic": "Basic"}
+    def profiles(cls) -> dict[str, dict[str, str]]:
+        return {"": {"basic": "Basic"}}
 
     @classmethod
-    def keyways(cls) -> dict[str, str]:
-        return {"1": "1"}
+    def keyways(cls) -> dict[str, dict[str, str]]:
+        return {"": {"1": "1"}}
 
     @classmethod
     def basic_bitting_definition(cls) -> str:
@@ -60,11 +60,6 @@ class SystemD(key.Key):
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
-        if profile not in cls.profiles():
-            raise ValueError("Invalid profile specified!")
-        if keyway not in cls.keyways():
-            raise ValueError("Invalid keyway specified!")
-
         if keyway == "1":
             if not resource_fetcher.pre_fetch_resource("resources/DOM/SystemD_B1.step"):
                 raise ValueError("Unable to load DOM Keyway 1 blank")

@@ -30,6 +30,6 @@ bogus123d.Vector = Empty
 bogus123d.Wire = Empty
 
 # Jump into realkey
-from realkey import realkey
+from realkey import realkey_web
 
-await realkey.main(keygen)
+await realkey_web.main(keygen)

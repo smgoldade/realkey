@@ -15,7 +15,7 @@ await bootstrap()
 
 import binascii
 from build123d import *
-from realkey import key, resource_fetcher, ASSA, DOM, MIWA, Opnus, Paclock, SargentAndGreenleaf
+from realkey import key, resource_fetcher, ASSA, DOM, MIWA, Opnus, Paclock, SargentAndGreenleaf, Schlage
 
 
 def generate_key(key_tag: str, profile: str, keyway: str, bitting: str) -> dict[str, str]:

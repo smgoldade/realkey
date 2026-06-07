@@ -5,7 +5,7 @@ from js import Blob, navigator, URL, URLSearchParams, window  # type: ignore
 
 import binascii, html, urllib.parse
 from build123d import *
-from realkey import key, web_core, ASSA, DOM, MIWA, Opnus, Paclock, SargentAndGreenleaf
+from realkey import key, web_core, ASSA, DOM, MIWA, Opnus, Paclock, SargentAndGreenleaf, Schlage
 
 key_select = web_core.SelectElement(web.page["key-select"])
 profile_select = web_core.SelectElement(web.page["profile-select"])
@@ -31,7 +31,7 @@ async def main(bg_keygen):
     global keygen
     keygen = bg_keygen
     remove_loading()
-    key_select.populate("Choose a key", {k: v.display_name() for k, v in key.Key._list.items()})
+    key_select.populate("Choose a key", {"": {k: v.display_name() for k, v in key.Key._list.items()}})
     key_select.enabled = True
     await apply_search_params()
 
