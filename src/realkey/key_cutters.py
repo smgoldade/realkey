@@ -60,6 +60,9 @@ def smooth_angled_cutter(cuts: list[tuple[float, float]], cut_root_width: float,
         neutral_y (float): The default neutral position for ramp in and ramp out, typically the Y value of the top of the key with a little cushion to close the shape.
         angle (float): The desired angle of all cuts, defined as the total angle of the cut, between two ramps
     """
+    if len(cuts) < 2:
+        return angled_cutter(cuts, cut_root_width, neutral_y, cut_root_width*10, angle)
+
     ha = angle / 2
     hw = cut_root_width / 2
     cs = math.tan(math.radians(ha))

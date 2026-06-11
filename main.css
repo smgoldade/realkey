@@ -139,6 +139,34 @@ tr:nth-child(odd) {
     box-sizing: border-box;
 }
 
+.length-input {
+    display: inline-flex;
+    border: 2px inset #999;
+}
+
+.length-input-text {
+    border: none;
+    outline: none;
+    background-color: #333;
+    border-radius: 0;
+}
+
+.length-input-text:invalid {
+    background-color: #700;
+}
+
+.length-input-select {
+    min-width: 30px;
+
+    margin: 0;
+    padding: 0 6px;
+
+    cursor: pointer;
+    border: none;
+    border-radius: 0;
+    background-color: #333;
+}
+
 .red-button {
     background-color: #800;
 }
@@ -255,7 +283,7 @@ tr:nth-child(odd) {
     justify-content: center;
 }
 
-#model-overlay {
+#model-generating {
     width: 100%;
 
     display: flex;

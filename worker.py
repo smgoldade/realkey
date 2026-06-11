@@ -1,17 +1,9 @@
 import micropip
 
+micropip.set_index_urls(["https://yeicor.github.io/OCP.wasm", "https://pypi.org/simple"])
 
-# Bootstrap load in build123d
-async def bootstrap(ocp_index="https://yeicor.github.io/OCP.wasm"):
-    # Prioritize the OCP.wasm package repository so that wasm-specific packages are preferred.
-    micropip.set_index_urls([ocp_index, "https://pypi.org/simple"])
-
-    # Install the required packages.
-    await micropip.install(["ipython == 9.10.0", "build123d"])
-
-
-# Load the boot strap
-await bootstrap()
+# Install the required packages.
+await micropip.install(["ipython == 9.10.0", "build123d", "typing-extensions"])
 
 import binascii
 from build123d import *
@@ -42,7 +34,36 @@ def generate_key(key_tag: str, profile: str, keyway: str, bitting: str) -> dict[
         return returns
     except Exception as e:
         return {"error": f"{e}"}
+    
+def generate_key_art(key_tag: str, profile: str, keyway: str, bitting: str) -> dict[str, str]:
+    key_class: key.Key = key.Key._list[key_tag]
 
+    try:
+        generated_key: Part | None = None
+        if len(bitting) == 0:
+            generated_key = key_class.blank(profile, keyway)
+        else:
+            generated_key = key_class.key(profile, keyway, bitting)
+        if generated_key is None:
+            return {"error": "No key or blank generated!"}
+        
+        view_port_origin=(100, 50, 80)
+        visible, hidden = generated_key.project_to_viewport(view_port_origin)
+        max_dimension = max(*Compound(children=visible + hidden).bounding_box().size)
+        exporter = ExportSVG(scale=100 / max_dimension)
+        exporter.add_layer("Visible")
+        exporter.add_layer("Hidden", line_color=(99, 99, 99), line_type=LineType.ISO_DOT)
+        exporter.add_shape(visible, layer="Visible")
+        exporter.add_shape(hidden, layer="Hidden")
+        exporter.write("temp.svg")
+
+        returns: dict[str, str] = {}
+        with open("temp.svg", "rb") as svg:
+            returns["svg"] = binascii.b2a_base64(svg.read()).decode("utf-8")
+
+        return returns
+    except Exception as e:
+        return {"error": f"{e}"}
 
 def set_base_url(base_url: str):
     resource_fetcher.set_base_url(base_url)

@@ -32,6 +32,10 @@ class Desmo(key.Key):
     @classmethod
     def keyways(cls) -> dict[str, dict[str, str]]:
         return {"": {"desmo": "Desmo"}}
+    
+    @classmethod
+    def artwork(cls) -> str | None:
+        return "resources/ASSA/DesmoArt.svg"
 
     @classmethod
     def basic_bitting_definition(cls) -> str:
@@ -47,8 +51,6 @@ class Desmo(key.Key):
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
-        if not bitting.isnumeric():
-            raise ValueError("Only numeric cuts are allowed")
         if profile == "6pin" and len(bitting) > 6:
             raise ValueError("6 pin profile only supports a maximum of 6 cuts")
         if profile == "8pin" and len(bitting) > 8:
@@ -57,6 +59,8 @@ class Desmo(key.Key):
             raise ValueError("10 pin profile only supports a maximum of 10 cuts")
         if len(bitting) % 2 != 0:
             raise ValueError("Number of cuts must be even")
+        if not bitting.isnumeric():
+            raise ValueError("Only numeric cuts are allowed")
         for cut in bitting:
             if int(cut) < 1 or int(cut) > 6:
                 raise ValueError("Cut depths must be from 1 to 6")

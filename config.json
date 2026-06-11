@@ -3,17 +3,25 @@
     "packages": [
         "micropip"
     ],
+    "js_modules": {
+        "main": {
+            "model_view.js": "model_view"
+        }
+    },
     "files": {
         "{PATH}": "./src/realkey",
         "{FROM}": "{PATH}",
         "{TO}": "./realkey",
-        "{FROM}/realkey_web.py": "{TO}/realkey_web.py",
         "{FROM}/geom_tools.py": "{TO}/geom_tools.py",
         "{FROM}/key_cutters.py": "{TO}/key_cutters.py",
         "{FROM}/key.py": "{TO}/key.py",
         "{FROM}/resource_fetcher.py": "{TO}/resource_fetcher.py",
+        "{FROM}/tab_follower.py": "{TO}/tab_follower.py",
+        "{FROM}/tab_key.py": "{TO}/tab_key.py",
+        "{FROM}/tab.py": "{TO}/tab.py",
         "{FROM}/svgtools.py": "{TO}/svgtools.py",
         "{FROM}/web_core.py": "{TO}/web_core.py",
+        "{FROM}/web_main.py": "{TO}/web_main.py",
         "{FROM}/ASSA.py": "{TO}/ASSA.py",
         "{FROM}/DOM.py": "{TO}/DOM.py",
         "{FROM}/MIWA.py": "{TO}/MIWA.py",

@@ -19,6 +19,10 @@ class PR1(key.Key):
     @classmethod
     def display_name(cls) -> str:
         return "Paclock PR1"
+    
+    @classmethod
+    def artwork(cls) -> str | None:
+        return "resources/Paclock/PR1Art.svg"
 
     @classmethod
     def profiles(cls) -> dict[str, dict[str, str]]:
@@ -38,12 +42,13 @@ class PR1(key.Key):
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
-        if not bitting.isnumeric():
-            raise ValueError("Only numeric cuts are allowed")
         if profile == "pr1" and len(bitting) > 6:
             raise ValueError("Maximum supported cuts for PR1 profile is 6")
         if profile == "pro" and len(bitting) > 7:
             raise ValueError("Maximum supported cuts for PRO profile is 7")
+        
+        if not bitting.isnumeric():
+            raise ValueError("Only numeric cuts are allowed")
 
         for cut in bitting:
             if int(cut) < 1 or int(cut) > 6:

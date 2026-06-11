@@ -1,5 +1,4 @@
 from build123d import *
-
 from realkey import key, key_cutters, resource_fetcher, svgtools
 
 SCHLAGE_ROOT_DEPTHS = [0.335 * IN - i * 0.015 * IN for i in range(10)]
@@ -147,6 +146,10 @@ class Everest(key.Key, EverestBlank):
     @classmethod
     def display_name(cls) -> str:
         return "Schlage Everest"
+    
+    @classmethod
+    def artwork(cls) -> str | None:
+        return "resources/Schlage/EverestArt.svg"
 
     @classmethod
     def profiles(cls) -> dict[str, dict[str, str]]:
@@ -211,11 +214,11 @@ class Everest(key.Key, EverestBlank):
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
-        if not bitting.isnumeric():
-            raise ValueError("Only numeric cuts are allowed")
-
         if len(bitting) > 6:
             raise ValueError("Only up to 6 cuts are allowed")
+        
+        if not bitting.isnumeric():
+            raise ValueError("Only numeric cuts are allowed")
 
         for cut in bitting:
             if int(cut) < 0 or int(cut) > 9:
@@ -248,6 +251,8 @@ class Everest(key.Key, EverestBlank):
             with BuildSketch() as mb_c:
                 add(angled_cutter)
             extrude(amount=cls.EVEREST_KEY_WIDTH * 2, mode=Mode.SUBTRACT)
+        if everest_key.part is None:
+            raise ValueError("Unable to generate key")
         everest_key.part = everest_key.part.rotate(Axis.X, 180)
         return Part(everest_key.part)
 
@@ -261,6 +266,10 @@ class EverestPrimus(key.Key, EverestBlank):
     def display_name(cls) -> str:
         return "Schlage Everest Primus"
 
+    @classmethod
+    def artwork(cls) -> str | None:
+        return "resources/Schlage/PrimusArt.svg"
+    
     @classmethod
     def profiles(cls) -> dict[str, dict[str, str]]:
         return {
@@ -314,7 +323,8 @@ class EverestPrimus(key.Key, EverestBlank):
         return (
             "<b>Cuts:</b> Up to 6, defined from bow to tip. Sidebar up to 5, defined from bow to tip.<br>"
             "<i>Separate main cuts from sidebar with a space.</i><br>"
-            "<b>Depths:</b> Maximum Lift 0 to Minimum Lift 9, Sidebar 1 through 7<br><b>Example:</b> <i>326163 23645</i><br>"
+            "<b>Depths:</b> Maximum Lift 0 to Minimum Lift 9, Sidebar 1 through 7<br>"
+            "<b>Example:</b> <i>326163 23645</i><br>"
             "<i>Make sure warding channels are clean after printing or key will be difficult to use!</i>"
         )
 
@@ -324,14 +334,17 @@ class EverestPrimus(key.Key, EverestBlank):
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
-        main_bitting, sidebar_bitting = bitting.split(" ")
-        if not main_bitting.isnumeric() or not sidebar_bitting.isnumeric():
-            raise ValueError("Only numeric cuts are allowed")
+        if not " " in bitting:
+            raise ValueError("No sidebar cuts specified")
 
+        main_bitting, sidebar_bitting = bitting.split()
         if len(main_bitting) > 6:
             raise ValueError("Only up to 6 main cuts are allowed")
         if len(sidebar_bitting) > 5:
             raise ValueError("Only up to 5 sidebar cuts are allowed")
+
+        if not main_bitting.isnumeric() or not sidebar_bitting.isnumeric():
+            raise ValueError("Only numeric cuts are allowed")
 
         for cut in main_bitting:
             if int(cut) < 0 or int(cut) > 9:
@@ -383,6 +396,8 @@ class EverestPrimus(key.Key, EverestBlank):
             with BuildSketch() as sb_c:
                 add(sidebar_angled_cutter)
             extrude(amount=cls.EVEREST_SIDEBAR_WIDTH - 0.005, mode=Mode.SUBTRACT)
+        if primus_key.part is None:
+            raise ValueError("Unable to generate key")
         primus_key.part = primus_key.part.rotate(Axis.X, 180)
         return Part(primus_key.part)
 
@@ -394,6 +409,6 @@ if __name__ == "__main__":
     # export_step(sb, "e29_blank.step")
     # key = EverestPrimus.key("ep_6pin", "c124", "326163 23645")
     # export_step(key, "ep_key.step")
-    key = Everest.key("e29_6pin", "s123", "878587")
+    # key = Everest.key("e29_6pin", "s123", "878587")
     # export_step(key, "ep_key.step")
-    show_all()
+    # show_all()

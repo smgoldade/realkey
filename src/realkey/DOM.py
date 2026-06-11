@@ -28,6 +28,10 @@ class SystemD(key.Key):
     @classmethod
     def display_name(cls) -> str:
         return "DOM System D"
+    
+    @classmethod
+    def artwork(cls) -> str | None:
+        return "resources/DOM/SystemDArt.svg"
 
     @classmethod
     def profiles(cls) -> dict[str, dict[str, str]]:
@@ -40,7 +44,9 @@ class SystemD(key.Key):
     @classmethod
     def basic_bitting_definition(cls) -> str:
         return (
-            "<b>Cuts:</b> Up to 10, defined from bow to tip, right side before left side.<br><b>Depths:</b> Maximum Lift 1 to Minimum Lift 5<br><b>Example:</b> <i>5233342424</i>"
+            "<b>Cuts:</b> Up to 10, defined from bow to tip, right side before left side.<br>"
+            "<b>Depths:</b> Maximum Lift 1 to Minimum Lift 5<br>"
+            "<b>Example:</b> <i>5233342424</i>"
         )
 
     @classmethod
@@ -49,12 +55,12 @@ class SystemD(key.Key):
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
-        if not bitting.isnumeric():
-            raise ValueError("Only numeric cuts are allowed")
         if len(bitting) > 10:
             raise ValueError("Only up to 10 cuts are allowed")
         if len(bitting) % 2 != 0:
             raise ValueError("Number of cuts must be even")
+        if not bitting.isnumeric():
+            raise ValueError("Only numeric cuts are allowed")
 
         for cut in bitting:
             if int(cut) < 1 or int(cut) > 5:

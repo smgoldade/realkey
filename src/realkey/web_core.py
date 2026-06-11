@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from pyscript import web
+from pyscript import web, when
 
 
 class Element:
@@ -26,17 +26,28 @@ class Element:
     def html(self, value: str):
         self._web_element.innerHTML = value
 
+    def _set_class_bool(self, class_name: str, value: bool):
+        if value:
+            if not class_name in self._web_element.classes:
+                self._web_element.classes.add(class_name)
+        else:
+            self._web_element.classes.remove(class_name)
+
     @property
     def hidden(self) -> bool:
         return "hide" in self._web_element.classes
-    
+
     @hidden.setter
     def hidden(self, value: bool):
-        if value:
-            if not "hide" in self._web_element.classes:
-                self._web_element.classes.add("hide")
-        else:
-            self._web_element.classes.discard("hide") # type: ignore
+        self._set_class_bool("hide", value)
+
+    @property
+    def active(self) -> bool:
+        return "active" in self._web_element.classes
+
+    @active.setter
+    def active(self, value: bool):
+        self._set_class_bool("active", value)
 
 
 class ValueElement(Element):
@@ -47,8 +58,29 @@ class ValueElement(Element):
     def value(self) -> str:
         return str(self._web_element.value)
 
+    @property
+    def stripped_value(self) -> str:
+        return str(self._web_element.value).strip()
+
     @value.setter
     def value(self, v: str):
+        self._web_element.value = v
+
+
+class FloatValueElement(Element):
+    def __init__(self, web_element: web.ElementCollection) -> None:
+        super().__init__(web_element)
+
+    @property
+    def value(self) -> float:
+        return float(str(self._web_element.value))
+
+    @property
+    def stripped_value(self) -> float:
+        return float(str(self._web_element.value).strip())
+
+    @value.setter
+    def value(self, v: float):
         self._web_element.value = v
 
 
@@ -83,29 +115,30 @@ class OptionElementList(list[OptionElement]):
             if option.selected:
                 return option
         return self[0]
-    
+
     def __str__(self):
         strs = [str(e) for e in self]
         return f"[{",".join(strs)}]"
+
 
 class SelectElement(Element):
     def __init__(self, web_element: web.ElementCollection) -> None:
         super().__init__(web_element)
 
     def populate(self, null_string: str, options_dict: dict[str, dict[str, str]]):
-        self._web_element.replaceChildren()
+        self._web_element.replaceChildren()  # type: ignore
         if len(null_string) > 0:
             self._web_element.options.add(value="null", html=null_string)  # type: ignore
         for optgroup, options in options_dict.items():
             if len(optgroup) > 0:
                 group = web.optgroup(label=optgroup)
-                self._web_element.append(group)
-                for value,html in options.items():
+                self._web_element.append(group)  # type: ignore
+                for value, html in options.items():
                     opt = web.option(innerHTML=html, value=value)
                     group.append(opt)  # type: ignore
             else:
-                for value,html in options.items():
-                    self._web_element.options.add(value=value, html=html)  # type: ignore           
+                for value, html in options.items():
+                    self._web_element.options.add(value=value, html=html)  # type: ignore
 
     @property
     def options(self) -> OptionElementList:
@@ -126,3 +159,63 @@ class SelectElement(Element):
     @property
     def selected_html(self) -> str:
         return self.options.selected.html
+
+
+class LengthInputElement(FloatValueElement):
+    def __init__(self, web_element: web.ElementCollection) -> None:
+        super().__init__(web_element)
+
+        self._set_class_bool("length-input", True)
+        self._input = web.input_(type="text", value="0.000", min="0", pattern="^\\d*(\\.\\d{0,3})?$", classes=["length-input-text"])
+        self._units = web.select(classes=["length-input-select"])
+        self._mm = web.option(value="mm", innerHTML="mm")
+        self._inch = web.option(value="in", innerHTML="in")
+        self._resolution = 3
+
+        self._units.append(self._mm)
+        self._units.append(self._inch)
+
+        self._web_element.append(self._input)  # type: ignore
+        self._web_element.append(self._units)  # type: ignore
+
+        when("change", self._units)(self.unit_change)
+        when("input", self._input)(self.validate)
+        when("invalid", self._input)(self.invalid_input)
+
+    def unit_change(self):
+        if self._units.options.selected == self._mm:
+            self._resolution = 3
+            self._input.pattern = "^\\d*(\\.\\d{0,3})?$"
+            self.value = self.value * 25.4
+        elif self._units.options.selected == self._inch:
+            self._resolution = 5
+            self._input.pattern = "^\\d*(\\.\\d{0,5})?$"
+            self.value = self.value / 25.4
+        self.validate()
+
+    def validate(self):
+        self._input.setCustomValidity("")  # type: ignore
+        self._input.reportValidity()  # type: ignore
+
+    def invalid_input(self):
+        self._input.setCustomValidity(f"Enter a positive value with maximum decimal precision of {self._resolution}")  # type: ignore
+
+    @property
+    def value(self) -> float:
+        v = float(str(self._input.value))
+        if self._units.options.selected == self._inch:
+            return 25.4 * v
+        return v
+
+    @property
+    def stripped_value(self) -> float:
+        v = float(str(self._input.value).strip())
+        if self._units.options.selected == self._inch:
+            return 25.4 * v
+        return v
+
+    @value.setter
+    def value(self, v: float):
+        if self._units.options.selected == self._inch:
+            v /= 25.4
+        self._input.value = f"{v:.{self._resolution}f}"

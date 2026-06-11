@@ -5,7 +5,7 @@ A foreground UI python script starts with [main.py](https://github.com/smgoldade
 A background worker script starts with [worker.py](https://github.com/smgoldade/realkey/blob/main/worker.py), which receives requests from the foreground UI to do the heavy lifting. This background worker takes quite a bit of time to load as it needs to fetch build123d and other packages needed by build123d.
 
 Classes that extend [Key](https://github.com/smgoldade/realkey/blob/main/src/realkey/key.py) register themselves with the internal list.
-This internal list is used to show available keys to generate on the interface which exists at [realkey_web.py](https://github.com/smgoldade/realkey/blob/main/src/realkey/realkey_web.py).
+This internal list is used to show available keys to generate on the interface which exists at [tab_key.py](https://github.com/smgoldade/realkey/blob/main/src/realkey/tab_key.py).
 
 ## Adding a Key
 ### Initial File Creation
@@ -27,12 +27,12 @@ Implement each method:
 - **key** - generates a key for a given profile, keyway, and bitting. Typically calls validate_bitting and blank right away, and then beforms boolean geometric operations on the blank to generate the final key model
 
 ### Making the Key Show Up
-Make sure the python package is imported in both [realkey_web.py](https://github.com/smgoldade/realkey/blob/main/src/realkey/realkey_web.py) and [worker.py](https://github.com/smgoldade/realkey/blob/main/worker.py)
+Make sure the python package is imported in both [tab_key.py](https://github.com/smgoldade/realkey/blob/main/src/realkey/tab_key.py) and [worker.py](https://github.com/smgoldade/realkey/blob/main/worker.py)
 
 ### Config!
-Make sure your key python file and any resource files used (model files, SVG, etc) are in [config.json](https://github.com/smgoldade/realkey/blob/main/config.json). Only the python file itself also needs to be added to [config-no-pkg.json](https://github.com/smgoldade/realkey/blob/main/config-no-pkg.json).
+Make sure your python files are in [config.json](https://github.com/smgoldade/realkey/blob/main/config.json).
 
-config-no-pkg is used to load the foreground UI python envrionment, and config is used to load the background worker python envrionment.
+Use lazy resource fetching utilizing [resource_fethcer.py](https://github.com/smgoldade/realkey/blob/main/src/realkey/resource_fetcher.py)
 
 ### Development Tips
 Use vscode with ocp_vscode to help develop new keys! You will see a main execution at the bottom of most key python files that uses ocp_vscode, which allows you to quickly run a key file and view the generated output from within vscode without having to spin-up the whole web setup, allowing for quicker prototyping and development.

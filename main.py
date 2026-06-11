@@ -1,10 +1,11 @@
 from pyscript import display, window, workers
-import sys
+import sys, micropip # type: ignore
 
 # Kick off key generating worker
 display("Loading key generation system...", target="status", append=False)
 keygen = await workers["keygen"]
 await keygen.set_base_url(window.location.origin + window.location.pathname)
+await micropip.install(["typing-extensions"])
 display("Loaded!", target="status", append=False)
 
 
@@ -30,6 +31,6 @@ bogus123d.Vector = Empty
 bogus123d.Wire = Empty
 
 # Jump into realkey
-from realkey import realkey_web
+from realkey import web_main
 
-await realkey_web.main(keygen)
+await web_main.main(keygen)

@@ -25,6 +25,10 @@ class Memolis(key.Key):
     @classmethod
     def display_name(cls) -> str:
         return "Opnus Memolis"
+    
+    @classmethod
+    def artwork(cls) -> str | None:
+        return "resources/Opnus/MemolisArt.svg"
 
     @classmethod
     def profiles(cls) -> dict[str, dict[str, str]]:
@@ -49,11 +53,11 @@ class Memolis(key.Key):
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
-        if not bitting.isnumeric():
-            raise ValueError("Only numeric cuts are allowed")
-
         if len(bitting) > 14:
             raise ValueError("Maximum supported cuts for Memolis is 14")
+
+        if not bitting.isnumeric():
+            raise ValueError("Only numeric cuts are allowed")
 
         for cut in bitting:
             if int(cut) < 0 or int(cut) > 5:
