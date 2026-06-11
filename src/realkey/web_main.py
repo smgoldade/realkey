@@ -27,6 +27,7 @@ tabs: dict[str, tab.Tab] = {
     "follower": tab_follower.FollowerTab(web_core.Element(web.page["follower-tab-button"]), web_core.Element(web.page["follower-tab"])),
 }
 
+
 async def main(background_worker):
     global bg_worker
     bg_worker = background_worker
@@ -68,11 +69,13 @@ async def apply_search_params():
     if "generate" in query_params:
         await start_generation()
 
+
 def get_selected_tab() -> tab.Tab:
     for _, tab in tabs.items():
         if tab.selected:
             return tab
     return tabs["keys"]
+
 
 def change_to_tab(tab_key: str):
     for key, tab in tabs.items():
@@ -80,6 +83,7 @@ def change_to_tab(tab_key: str):
             tab.show()
         else:
             tab.hide()
+
 
 @when("click", "#key-tab-button")
 def change_to_key_tab():
@@ -123,6 +127,7 @@ async def start_generation():
     generate.enabled = True
     save_stl.enabled = True
     save_step.enabled = True
+
 
 def save_shared(blob, extension: str):
     url = URL.createObjectURL(blob)

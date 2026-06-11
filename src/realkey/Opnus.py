@@ -25,10 +25,6 @@ class Memolis(key.Key):
     @classmethod
     def display_name(cls) -> str:
         return "Opnus Memolis"
-    
-    @classmethod
-    def artwork(cls) -> str | None:
-        return "resources/Opnus/MemolisArt.svg"
 
     @classmethod
     def profiles(cls) -> dict[str, dict[str, str]]:

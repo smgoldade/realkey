@@ -34,7 +34,8 @@ def generate_key(key_tag: str, profile: str, keyway: str, bitting: str) -> dict[
         return returns
     except Exception as e:
         return {"error": f"{e}"}
-    
+
+
 def generate_key_art(key_tag: str, profile: str, keyway: str, bitting: str) -> dict[str, str]:
     key_class: key.Key = key.Key._list[key_tag]
 
@@ -46,8 +47,8 @@ def generate_key_art(key_tag: str, profile: str, keyway: str, bitting: str) -> d
             generated_key = key_class.key(profile, keyway, bitting)
         if generated_key is None:
             return {"error": "No key or blank generated!"}
-        
-        view_port_origin=(100, 50, 80)
+
+        view_port_origin = (100, 50, 80)
         visible, hidden = generated_key.project_to_viewport(view_port_origin)
         max_dimension = max(*Compound(children=visible + hidden).bounding_box().size)
         exporter = ExportSVG(scale=100 / max_dimension)
@@ -64,6 +65,7 @@ def generate_key_art(key_tag: str, profile: str, keyway: str, bitting: str) -> d
         return returns
     except Exception as e:
         return {"error": f"{e}"}
+
 
 def set_base_url(base_url: str):
     resource_fetcher.set_base_url(base_url)

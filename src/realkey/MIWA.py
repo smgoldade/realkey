@@ -23,10 +23,6 @@ class SR(key.Key):
     @classmethod
     def display_name(cls) -> str:
         return "MIWA SR"
-    
-    @classmethod
-    def artwork(cls) -> str | None:
-        return "resources/MIWA/SRArt.svg"
 
     @classmethod
     def profiles(cls) -> dict[str, dict[str, str]]:
@@ -91,7 +87,7 @@ class SR(key.Key):
             raise ValueError("Only up to 10 cuts are allowed")
         if not bitting.isnumeric():
             raise ValueError("Only numeric cuts are allowed")
-        
+
         for cut in bitting:
             if int(cut) < 0 or int(cut) > 3:
                 raise ValueError("Cut depths must be from 0 to 3")

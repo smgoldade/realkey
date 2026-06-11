@@ -32,10 +32,6 @@ class Desmo(key.Key):
     @classmethod
     def keyways(cls) -> dict[str, dict[str, str]]:
         return {"": {"desmo": "Desmo"}}
-    
-    @classmethod
-    def artwork(cls) -> str | None:
-        return "resources/ASSA/DesmoArt.svg"
 
     @classmethod
     def basic_bitting_definition(cls) -> str:

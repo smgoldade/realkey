@@ -146,10 +146,6 @@ class Everest(key.Key, EverestBlank):
     @classmethod
     def display_name(cls) -> str:
         return "Schlage Everest"
-    
-    @classmethod
-    def artwork(cls) -> str | None:
-        return "resources/Schlage/EverestArt.svg"
 
     @classmethod
     def profiles(cls) -> dict[str, dict[str, str]]:
@@ -216,7 +212,7 @@ class Everest(key.Key, EverestBlank):
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
         if len(bitting) > 6:
             raise ValueError("Only up to 6 cuts are allowed")
-        
+
         if not bitting.isnumeric():
             raise ValueError("Only numeric cuts are allowed")
 
@@ -266,10 +262,6 @@ class EverestPrimus(key.Key, EverestBlank):
     def display_name(cls) -> str:
         return "Schlage Everest Primus"
 
-    @classmethod
-    def artwork(cls) -> str | None:
-        return "resources/Schlage/PrimusArt.svg"
-    
     @classmethod
     def profiles(cls) -> dict[str, dict[str, str]]:
         return {

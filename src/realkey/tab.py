@@ -1,8 +1,8 @@
-
 from abc import ABC, abstractmethod
 from typing_extensions import Self
 
 from realkey import web_core
+
 
 class Tab(ABC):
     _instance = None
@@ -11,15 +11,16 @@ class Tab(ABC):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
-    
+
     def __init__(self, button: web_core.Element, tab: web_core.Element) -> None:
         super().__init__()
         self._button = button
         self._tab = tab
 
+    @property
     def selected(self) -> bool:
         return not self._tab.hidden
-        
+
     def hide(self):
         self._tab.hidden = True
         self._button.active = False

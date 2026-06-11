@@ -31,7 +31,7 @@ class Element:
             if not class_name in self._web_element.classes:
                 self._web_element.classes.add(class_name)
         else:
-            self._web_element.classes.remove(class_name)
+            self._web_element.classes.discard(class_name)  # type: ignore
 
     @property
     def hidden(self) -> bool:

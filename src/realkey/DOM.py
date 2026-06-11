@@ -28,10 +28,6 @@ class SystemD(key.Key):
     @classmethod
     def display_name(cls) -> str:
         return "DOM System D"
-    
-    @classmethod
-    def artwork(cls) -> str | None:
-        return "resources/DOM/SystemDArt.svg"
 
     @classmethod
     def profiles(cls) -> dict[str, dict[str, str]]:

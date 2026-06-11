@@ -1,10 +1,7 @@
 from pyscript import web, when
-from pyscript.ffi import to_js
-from js import Blob, URL
-from pyscript.js_modules import model_view  # type: ignore
 
 from realkey import key, tab, web_core, web_main, ASSA, DOM, MIWA, Opnus, Paclock, SargentAndGreenleaf, Schlage
-import binascii, urllib.parse
+import urllib.parse
 
 key_select = web_core.SelectElement(web.page["key-select"])
 profile_select = web_core.SelectElement(web.page["profile-select"])
@@ -24,15 +21,17 @@ def get_selected_key() -> key.Key | None:
 
 
 def run_validation():
-    if len(bitting.stripped_value) == 0:
-        return
     selected_key = get_selected_key()
     if selected_key is None:
         return
+    if len(bitting.stripped_value) == 0:
+        web_main.info.html = ""
+        web_main.generate.enabled = True
+        return
     try:
         selected_key.validate_bitting(profile_select.selected_value, keyway_select.selected_value, bitting.stripped_value)
-        web_main.generate.enabled = True
         web_main.info.html = ""
+        web_main.generate.enabled = True
     except Exception as e:
         web_main.info.html = f"<span style='color:#800'>{e}</span>"
         web_main.generate.enabled = False
@@ -56,7 +55,6 @@ def load_profiles_and_keyways():
         web_main.generate.enabled = False
         return
 
-    web_main.meta_image.content = selected_key.artwork()
     profile_select.populate("", selected_key.profiles())
     keyway_select.populate("", selected_key.keyways())
     decode_definition = selected_key.advanced_bitting_definition()
@@ -114,6 +112,10 @@ class KeyTab(tab.Tab):
 
         key_select.populate("Choose a key", {"": {k: v.display_name() for k, v in key.Key._list.items()}})
         key_select.enabled = True
+
+    def show(self):
+        super().show()
+        run_validation()
 
     def load_from_params(self, query_params):
         if "key" in query_params:

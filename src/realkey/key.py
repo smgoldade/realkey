@@ -1,6 +1,7 @@
 from build123d import Part
 from abc import ABC, abstractmethod
 
+
 class Key(ABC):
     """A class that all Keys should extend and define the methods of for a common key generation scheme"""
 
@@ -22,14 +23,9 @@ class Key(ABC):
 
     @classmethod
     @abstractmethod
-    def artwork(cls) -> str | None:
-        """Returns the path to artwork for this key"""
-
-    @classmethod
-    @abstractmethod
     def profiles(cls) -> dict[str, dict[str, str]]:
         """Returns the possible profiles for this key"""
-    
+
     @classmethod
     @abstractmethod
     def keyways(cls) -> dict[str, dict[str, str]]:

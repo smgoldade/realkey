@@ -116,10 +116,6 @@ class SGSDB(key.Key):
     @classmethod
     def display_name(cls) -> str:
         return "S&G Safe Deposit Box"
-    
-    @classmethod
-    def artwork(cls) -> str | None:
-        return "resources/SargentAndGreenleaf/SDBArt.svg"
 
     @classmethod
     def profiles(cls) -> dict[str, dict[str, str]]:
@@ -183,7 +179,7 @@ class SGSDB(key.Key):
             raise ValueError(f"S&G {cls.profiles()[profile]} has a maximum of 6 cuts")
         if profile in ["87h_7cut", "96_7cut"] and len(bitting) > 7:
             raise ValueError(f"S&G {cls.profiles()[profile]} has a maximum of 7 cuts")
-        
+
         if not bitting.isnumeric():
             raise ValueError("Only numeric cuts are allowed")
 
