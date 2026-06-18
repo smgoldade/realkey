@@ -98,7 +98,9 @@ class Memolis(key.Key):
             bitting_edges = right_edges[0] + right_edges[-1] + left_edges[0] + left_edges[-1]
 
             chamfer(bitting_edges, cls.MEMOLIS_CUT_SURFACE_WIDTH / sqrt(2))
-        return Part(memolis_blank.part)
+        if memolis_blank.part is None:
+            raise ValueError("Unable to generate blank")
+        return memolis_blank.part
 
     @classmethod
     def key_cutter(cls):

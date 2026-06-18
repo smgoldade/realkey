@@ -199,7 +199,7 @@ class SGSDB(key.Key):
             blank = step_blank.part
         if blank is None:
             raise ValueError("Issue loading blank")
-        return Part(blank)
+        return blank
 
     @classmethod
     def key(cls, profile: str, keyway: str, bitting: str) -> key_cutters.Part:

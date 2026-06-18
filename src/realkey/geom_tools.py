@@ -53,3 +53,23 @@ def Tube(inner_radius: float, outer_radius: float, length: float) -> Part:
     if tube.part is None:
         raise ValueError("Unable to generate Tube")
     return tube.part
+
+def generate_lifting_cut(face: Face, direction: VectorLike, lift_direction:VectorLike, length: float, lift_amount: float) -> Part:
+
+
+    total_displacement = Vector(direction).normalized() * length
+    total_lift = Vector(lift_direction).normalized() * lift_amount
+
+    #face.position = source
+    #face.orientation = Vector(direction).normalized()
+
+    with BuildPart() as lifting_cut:
+        with BuildLine() as cut_line:
+            Line((0,0,0), total_displacement + total_lift)
+        sweep(face, cut_line.line)
+
+    if lifting_cut.part is None:
+        raise ValueError("Unable to generate lifting cut")
+    return lifting_cut.part
+
+    

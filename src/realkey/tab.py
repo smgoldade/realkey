@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
+from collections.abc import Callable
+from typing import Any
 from typing_extensions import Self
+import urllib.parse
 
 from realkey import web_core
 
@@ -28,6 +31,30 @@ class Tab(ABC):
     def show(self):
         self._tab.hidden = False
         self._button.active = True
+
+    def _populate_param(self, query_params, param_name: str, set_value: Callable[[str], Any]) -> bool:
+        """A helper method to set query parameters. If a given parameter name is provided, set_value is called with the value
+
+        Args:
+            query_params (_type_): A dictionary containing the query parameters from Javascripts URLSearchParams
+            param_name (str): The name of the parameter to search for possible settings
+            set_value (Callable[[str]]): A function that handles setting the value from the query parameters
+
+        Returns:
+            bool: False on any error, True if the param didnt exist or was set correctly
+        """
+        if param_name in query_params:
+            target_value = urllib.parse.unquote(query_params[param_name])
+            try:
+                set_value(target_value)
+                return True
+            except:
+                return False
+        return True
+
+    @abstractmethod
+    def get_query_params(self) -> dict[str, str]:
+        """Returns all current parameter values for the tab, used to generate shareable links"""
 
     @abstractmethod
     def load_from_params(self, query_params):

@@ -1,14 +1,13 @@
 from pyscript import web, when
 
-from realkey import key, tab, web_core, web_main, assa, dom, miwa, opnus, paclock, sargentandgreenleaf, schlage
-import urllib.parse
+from realkey import key, tab, web_core, web_main, assa, dom, miwa, opnus, paclock, sargentandgreenleaf, schlage, vsr
 
 key_select = web_core.SelectElement(web.page["key-select"])
 profile_select = web_core.SelectElement(web.page["profile-select"])
 keyway_select = web_core.SelectElement(web.page["keyway-select"])
 show_advanced = web_core.Element(web.page["show-advanced"])
 bitting_instructions = web_core.Element(web.page["bitting-instructions"])
-bitting = web_core.ValueElement(web.page["bitting"])
+bitting = web_core.StringValueElement(web.page["bitting"])
 advanced_bitting_info = web_core.Element(web.page["advanced-bitting-info"])
 
 
@@ -119,31 +118,42 @@ class KeyTab(tab.Tab):
         super().show()
         run_validation()
 
+    def get_query_params(self) -> dict[str, str]:
+        return_values: dict[str, str] = {}
+
+        if key_select.selected_value == "null":
+            return return_values
+        return_values["key"] = key_select.selected_value
+        return_values["profile"] = profile_select.selected_value
+        return_values["keyway"] = keyway_select.selected_value
+        return_values["bitting"] = bitting.stripped_value
+
+        return return_values
+
     def load_from_params(self, query_params):
-        if "key" in query_params:
-            target_key = urllib.parse.unquote(query_params["key"])
-            try:
-                key_select.selected_value = target_key
-                key_change()
-            except:
-                return
-        if "profile" in query_params:
-            target_profile = urllib.parse.unquote(query_params["profile"])
-            try:
-                profile_select.selected_value = target_profile
-                profile_change()
-            except:
-                pass
-        if "keyway" in query_params:
-            target_keyway = urllib.parse.unquote(query_params["keyway"])
-            try:
-                keyway_select.selected_value = target_keyway
-                keyway_change()
-            except:
-                pass
-        if "bitting" in query_params:
-            target_bitting = urllib.parse.unquote(query_params["bitting"])
-            bitting.value = target_bitting
+        def set_key(key: str):
+            key_select.selected_value = key
+            key_change()
+
+        if not self._populate_param(query_params, "key", set_key):
+            return
+
+        def set_profile(profile: str):
+            profile_select.selected_value = profile
+            profile_change()
+
+        self._populate_param(query_params, "profile", set_profile)
+
+        def set_keyway(keyway: str):
+            keyway_select.selected_value = keyway
+            keyway_change()
+
+        self._populate_param(query_params, "keyway", set_keyway)
+
+        def set_bitting(bittin: str):
+            bitting.value = bittin
+
+        self._populate_param(query_params, "bitting", set_bitting)
 
     async def generate(self, bg_worker) -> dict[str, str]:
         selected_key = get_selected_key()

@@ -3,7 +3,7 @@ import binascii
 from pyscript import document, web, when
 from pyscript.ffi import to_js
 from pyscript.js_modules import model_view  # type: ignore
-from js import Blob, URL, URLSearchParams, window  # type: ignore
+from js import Blob, navigator, URL, URLSearchParams, window  # type: ignore
 
 import html, urllib.parse
 from build123d import *
@@ -17,6 +17,9 @@ info = web_core.Element(web.page["info"])
 model_description = web_core.Element(web.page["model-description"])
 model_generating = web_core.Element(web.page["model-generating"])
 meta_image = web.page["meta-image"]
+share_settings = web_core.CheckboxElement(web.page["share-settings"])
+share_generate = web_core.CheckboxElement(web.page["share-generate"])
+share_dialog = web_core.Element(web.page["share-dialog"])
 
 bg_worker = None
 stl_blob: Blob = None
@@ -41,7 +44,6 @@ def remove_loading():
     generate.enabled = False
     save_stl.enabled = False
     save_step.enabled = False
-    copy_link.enabled = False
     info.html = ""
     model_generating.html = ""
 
@@ -67,14 +69,18 @@ async def apply_search_params():
             tab.hide()
 
     if "generate" in query_params:
+        generate_value = urllib.parse.unquote(query_params["generate"])
+
+        if generate_value != "" and generate_value != "true":
+            return
         await start_generation()
 
 
-def get_selected_tab() -> tab.Tab:
-    for _, tab in tabs.items():
+def get_selected_tab() -> tuple[tab.Tab, str]:
+    for tag, tab in tabs.items():
         if tab.selected:
-            return tab
-    return tabs["keys"]
+            return (tab, tag)
+    return tabs["keys"], "keys"
 
 
 def change_to_tab(tab_key: str):
@@ -103,7 +109,7 @@ async def start_generation():
 
     model_generating.html = "Generating..."
 
-    data = await get_selected_tab().generate(bg_worker)
+    data = await get_selected_tab()[0].generate(bg_worker)
     if "error" in data:
         info.html = f"<span style='color:#800'>{data["error"]}</span>"
         model_generating.html = ""
@@ -154,3 +160,20 @@ def save_as_step():
         return
 
     save_shared(step_blob, "step")
+
+
+@when("click", "#copy-link")
+def create_share_link():
+    base_url = URL.new(window.location.origin + window.location.pathname)
+
+    current_tab = get_selected_tab()
+    base_url.searchParams["tab"] = current_tab[1]
+
+    if share_settings.checked:
+        settings = current_tab[0].get_query_params()
+        base_url.searchParams.update(settings)
+    if share_generate.checked:
+        base_url.searchParams["generate"] = "true"
+
+    navigator.clipboard.writeText(base_url)
+    share_dialog.hidePopover()  # type: ignore

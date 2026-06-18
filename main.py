@@ -28,6 +28,7 @@ bogus123d.Part = Empty
 bogus123d.ShapeList = Empty
 bogus123d.Sketch = Empty
 bogus123d.Vector = Empty
+bogus123d.VectorLike = Empty
 bogus123d.Wire = Empty
 
 # Jump into realkey

@@ -365,7 +365,6 @@ class SchlageFollowerEnd(FollowerEnd):
 class Follower:
     @classmethod
     def generate(cls, config_data: FollowerConfigData) -> Part:
-        print(f"{config_data}")
         top_cls: FollowerEnd = FollowerEnd._list[config_data.top_tag]
         bottom_cls: FollowerEnd = FollowerEnd._list[config_data.bottom_tag]
 

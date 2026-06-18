@@ -1,7 +1,6 @@
 from pyscript import web, when
 from pyscript.ffi import to_js
 from realkey import follower, tab, web_core, web_main
-import urllib.parse
 
 follower_select = web_core.SelectElement(web.page["follower-select"])
 follower_length = web_core.LengthInputElement(web.page["follower-length"])
@@ -67,6 +66,7 @@ def load_follower_end(is_top: bool, tag: str, config: None | dict[str, float]):
         id = tag + "-ig-" + ("top" if is_top else "bottom")
         input = web_core.LengthInputElement(web.page[id])
         elements[tag] = input
+        when("change", input._get_input())(end_value_change)
         if config and tag in config:
             input.value = config[tag]
 
@@ -103,6 +103,11 @@ def bottom_change():
     run_validation()
 
 
+def end_value_change():
+    follower_select.selected_value = "Custom"
+    run_validation()
+
+
 def get_pretty_name() -> str:
     if follower_select.selected_value == "Custom":
         return f"Custom Follower - {follower_length.stripped_value}mm x {follower_diameter.stripped_value}mm - {follower_top_select.selected_html} ({",".join([f"{v.stripped_value}mm" for v in top_elements.values()])}) - {follower_bottom_select.selected_html} ({",".join([f"{v.stripped_value}mm" for v in bottom_elements.values()])})"
@@ -127,14 +132,71 @@ class FollowerTab(tab.Tab):
         super().show()
         run_validation()
 
+    def get_query_params(self) -> dict[str, str]:
+        return_values: dict[str, str] = {}
+
+        return_values["follower"] = follower_select.selected_value
+        if "Custom" != return_values["follower"]:
+            return return_values
+
+        return_values["follower_length"] = str(follower_length.stripped_value)
+        return_values["follower_diameter"] = str(follower_diameter.stripped_value)
+        return_values["follower_top"] = follower_top_select.selected_value
+        for tag, element in top_elements.items():
+            return_values[tag + "-ig-top"] = str(element.stripped_value)
+        return_values["follower_bottom"] = follower_bottom_select.selected_value
+        for tag, element in bottom_elements.items():
+            return_values[tag + "-ig-bottom"] = str(element.stripped_value)
+
+        return return_values
+
     def load_from_params(self, query_params):
-        if "follower" in query_params:
-            target_follower = urllib.parse.unquote(query_params["follower"])
-            try:
-                follower_select.selected_value = target_follower
-                follower_change()
-            except:
-                pass
+        def set_follower(follower: str):
+            follower_select.selected_value = follower
+            follower_change()
+
+        self._populate_param(query_params, "follower", set_follower)
+
+        if "Custom" != follower_select.selected_value:
+            return
+
+        def set_follower_length(length: str):
+            follower_length.value = float(length)
+            length_change()
+
+        self._populate_param(query_params, "follower_length", set_follower_length)
+
+        def set_follower_diameter(diameter: str):
+            follower_diameter.value = float(diameter)
+            length_change()
+
+        self._populate_param(query_params, "follower_diameter", set_follower_diameter)
+
+        def set_follower_top(top: str):
+            follower_top_select.selected_value = top
+            top_change()
+
+            for tag, element in top_elements.items():
+
+                def set_element_value(value: str):
+                    element.value = float(value)
+
+                self._populate_param(query_params, tag + "-ig-top", set_element_value)
+
+        self._populate_param(query_params, "follower_top", set_follower_top)
+
+        def set_follower_bottom(bottom: str):
+            follower_bottom_select.selected_value = bottom
+            bottom_change()
+
+            for tag, element in bottom_elements.items():
+
+                def set_element_value(value: str):
+                    element.value = float(value)
+
+                self._populate_param(query_params, tag + "-ig-bottom", set_element_value)
+
+        self._populate_param(query_params, "follower_bottom", set_follower_bottom)
 
     async def generate(self, bg_worker) -> dict[str, str]:
         top_config: dict[str, float] = {}

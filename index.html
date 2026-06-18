@@ -196,7 +196,11 @@
     </dialog>
     <dialog id="share-dialog" popover>
         <div style="float: right;"><button class="info-button" popovertarget="share-dialog" popovertargetaction="hide" title="Close"><i class="fa-solid fa-xmark"></i></button></div>
-        <button id="copy-link" title="Copy link" disabled><i class="fa-solid fa-link"></i> Copy Link</button>
+        <p id="share-setup" class="scrollable-dialog">
+            <input type="checkbox" id="share-settings" checked><label for="share-values">Share settings?</label><br>
+            <input type="checkbox" id="share-generate" checked><label for="share-values">Auto generate?</label><br>
+        </p>        
+        <button id="copy-link" title="Copy link" class="blue-button" popovertarget="share-dialog" popovertargetaction="hide"><i class="fa-solid fa-link"></i> Copy Link</button>
     </dialog>
 </body>
 

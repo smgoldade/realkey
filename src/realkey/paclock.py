@@ -98,7 +98,9 @@ class PR1(key.Key):
             with BuildSketch() as pr1_cutter:
                 add(cutter)
             extrude(amount=cls.PR1_KEY_WIDTH * 2, mode=Mode.SUBTRACT)
-        return Part(pr1_key.part)
+        if pr1_key.part is None:
+            raise ValueError("Unable to generate key")
+        return pr1_key.part
 
 
 if __name__ == "__main__":

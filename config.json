@@ -29,6 +29,7 @@
         "{FROM}/paclock.py": "{TO}/paclock.py",
         "{FROM}/sargentandgreenleaf.py": "{TO}/sargentandgreenleaf.py",
         "{FROM}/schlage.py": "{TO}/schlage.py",
+        "{FROM}/vsr.py": "{TO}/vsr.py",
         "{FROM}/follower.py": "{TO}/follower.py"
     }
 }

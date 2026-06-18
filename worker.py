@@ -1,13 +1,13 @@
-import micropip
+import importlib.metadata, micropip
 
 micropip.set_index_urls(["https://yeicor.github.io/OCP.wasm", "https://pypi.org/simple"])
 
 # Install the required packages.
-await micropip.install(["build123d", "typing-extensions"])
+await micropip.install(["build123d==0.10.0", "typing-extensions"], keep_going=True)
 
 import binascii
 from build123d import *
-from realkey import key, resource_fetcher, assa, dom, miwa, opnus, paclock, sargentandgreenleaf, schlage, follower
+from realkey import key, resource_fetcher, assa, dom, miwa, opnus, paclock, sargentandgreenleaf, schlage, vsr, follower
 
 
 def shared_generate(part: Part) -> dict[str, str]:

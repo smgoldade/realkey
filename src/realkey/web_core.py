@@ -50,7 +50,7 @@ class Element:
         self._set_class_bool("active", value)
 
 
-class ValueElement(Element):
+class StringValueElement(Element):
     def __init__(self, web_element: web.ElementCollection) -> None:
         super().__init__(web_element)
 
@@ -84,7 +84,7 @@ class FloatValueElement(Element):
         self._web_element.value = v
 
 
-class OptionElement(ValueElement):
+class OptionElement(StringValueElement):
     def __init__(self, web_element: web.ElementCollection) -> None:
         super().__init__(web_element)
 
@@ -227,3 +227,24 @@ class LengthInputElement(FloatValueElement):
         if self._units.options.selected == self._inch:
             v /= 25.4
         self._input.value = f"{v:.{self._resolution}f}"
+
+    def _get_input(self) -> web.input_:
+        return self._input
+
+
+class CheckboxElement(Element):
+    def __init__(self, web_element: web.ElementCollection) -> None:
+        super().__init__(web_element)
+
+    @property
+    def checked(self) -> bool:
+        if hasattr(self._web_element, "checked"):
+            return bool(self._web_element.checked)
+        return False
+
+    @checked.setter
+    def checked(self, value: bool):
+        if value:
+            self._web_element.checked = True
+        else:
+            self._web_element.removeAttribute("checked")  # type: ignore
