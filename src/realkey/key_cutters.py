@@ -111,6 +111,7 @@ def smooth_angled_cutter(cuts: list[tuple[float, float]], cut_root_width: float,
 
     # calculate trailing angled cut
     add_neutral_cut(cut_points, cuts[-1][0], cuts[-1][1], cut_root_width, signum)
+    cut_points.append(cut_points[0])
 
     with BuildSketch() as cutter:
         with BuildLine():

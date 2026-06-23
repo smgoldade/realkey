@@ -1,9 +1,23 @@
-import importlib.metadata, micropip
+import micropip
 
-micropip.set_index_urls(["https://yeicor.github.io/OCP.wasm", "https://pypi.org/simple"])
+
+# Keeps build123d from pulling the wrong ones
+print("[BG] Mocking cadquery-ocp-novtk and lib3mf")
+micropip.add_mock_package("cadquery-ocp-novtk", "7.9.3.1", modules={})
+micropip.add_mock_package("lib3mf", "2.4.1", modules={})
 
 # Install the required packages.
-await micropip.install(["build123d==0.10.0", "typing-extensions"], keep_going=True)
+print("[BG] Installing packages - cadquery-ocp-novtk")
+await micropip.install("cadquery-ocp-novtk-OCP.wasm==7.9.3.1.post202606201016", keep_going=True)
+print("[BG] Installing packages - lib3mf")
+await micropip.install("lib3mf-OCP.wasm==2.5.0.post202606200901", keep_going=True)
+print("[BG] Installing packages - cadquery_ocp_proxy")
+await micropip.install("cadquery_ocp_proxy==7.9.3.1.1", keep_going=True)
+print("[BG] Installing packages - build123d")
+await micropip.install("build123d==0.11.0", keep_going=True)
+print("[BG] Installing packages - typing-extensions")
+await micropip.install("typing-extensions", keep_going=True)
+print("[BG] Packages installed")
 
 import binascii
 from build123d import *

@@ -3,8 +3,10 @@ import sys, micropip # type: ignore
 
 # Kick off key generating worker
 display("Loading key generation system...", target="status", append=False)
+print("[FG] Waiting for background install")
 keygen = await workers["keygen"]
 await keygen.set_base_url(window.location.origin + window.location.pathname)
+print("[FG] Background worker loaded")
 await micropip.install(["typing-extensions"])
 display("Loaded!", target="status", append=False)
 
