@@ -19,6 +19,14 @@ class FollowerConfigData(NamedTuple):
 
 FOLLOWER_DEFINITIONS: dict[str, FollowerConfigData | None] = {
     "Custom": None,
+    "iNAHO Tierkey Short": FollowerConfigData(
+        50 * MM,
+        9.45 * MM,
+        "tongue",
+        {"tongue_depth": 4.5 * MM, "tongue_width": 3.1*MM},
+        "pin_slot",
+        {"pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
+    ),
     "Kaba Ace": FollowerConfigData(
         50 * MM,
         9.95 * MM,
