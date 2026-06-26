@@ -59,9 +59,14 @@ class EverestKeyway:
                     Polyline((0, 5.75), (0.5, 5.65), (0.5, 5.15), (0, 5.05), (0, 5.75))
                 make_face(mode=Mode.SUBTRACT)
             if 4 in notches:
-                with BuildLine():
-                    Polyline((0, 4.45), (0.775, 4.35), (0.775, 3.85), (0, 3.75), (0, 4.45))
-                make_face(mode=Mode.SUBTRACT)
+                if family == "b" or family == "r":
+                    with BuildLine():
+                        Polyline((0, 4.75), (0.5, 4.75), (1.650, 3.345), (0, 3.345), (0, 4.75))
+                    make_face(mode=Mode.SUBTRACT)
+                if family == "c" or family == "s":
+                    with BuildLine():
+                        Polyline((0, 4.45), (0.775, 4.35), (0.775, 3.85), (0, 3.75), (0, 4.45))
+                    make_face(mode=Mode.SUBTRACT)
 
         r = keyway.face()
         r.position -= r.bounding_box().center()
@@ -281,7 +286,6 @@ class EverestBlank:
         if profile in ["esl_7pin", "esl_ctrl", "e29sl_7pin", "e29sl_ctrl"]:
             y_datum = cls.EVEREST_SL_Y_DATUM
             blade_height = cls.EVEREST_SL_KEY_BLADE_HEIGHT
-                
 
         blank_profile = svgtools.get_starting_at_origin(everest_svg, "#profile_" + lookup_profile)
         blank = extrude(blank_profile, cls.EVEREST_KEY_WIDTH)
@@ -305,16 +309,7 @@ class EverestBlank:
             extrude(amount=cls.EVEREST_SIDEBAR_WIDTH - 0.001)
         blank -= sidebar_ramp.part
 
-        if profile in [
-            "e_6pin",
-            "e_ctrl",
-            "esl_7pin",
-            "esl_ctrl",
-            "e29_6pin",
-            "e29_ctrl",
-            "e29sl_7pin",
-            "e29sl_ctrl"
-        ]:
+        if profile in ["e_6pin", "e_ctrl", "esl_7pin", "esl_ctrl", "e29_6pin", "e29_ctrl", "e29sl_7pin", "e29sl_ctrl"]:
             with BuildPart() as everest_cutout:
                 with BuildSketch():
                     with BuildLine():
@@ -411,10 +406,10 @@ class Everest(key.Key, EverestBlank):
 
 
 class EverestSL(key.Key, EverestBlank):
-    EVEREST_SL_Y_DATUM = 19.15*MM
+    EVEREST_SL_Y_DATUM = 19.15 * MM
 
-    EVEREST_SL_SPACINGS = [1.096*IN - 0.15*IN*i for i in range(7)]
-    EVEREST_SL_DEPTHS = [0.3187*IN - 0.0125*IN*i for i in range(9)]
+    EVEREST_SL_SPACINGS = [1.096 * IN - 0.15 * IN * i for i in range(7)]
+    EVEREST_SL_DEPTHS = [0.3187 * IN - 0.0125 * IN * i for i in range(9)]
     EVEREST_SL_CUT_WIDTH = 0.056 * IN
     EVEREST_SL_ANGLE = 90
 
@@ -435,7 +430,7 @@ class EverestSL(key.Key, EverestBlank):
 
     @classmethod
     def keyways(cls) -> dict[str, dict[str, str]]:
-        return EverestKeyway.r_keyways()
+        return EverestKeyway.b_keyways() | EverestKeyway.r_keyways()
 
     @classmethod
     def basic_bitting_definition(cls) -> str:
@@ -602,13 +597,13 @@ class EverestPrimus(key.Key, EverestBlank):
 if __name__ == "__main__":
     from ocp_vscode import *
 
-    # keyway = EverestKeyway.build_keyway("c000")
+    keyway = EverestKeyway.build_keyway("r235")
     # sb = EverestPrimus.blank("e29p_ctrl", "s124")
     # export_step(sb, "e29_blank.step")
     # key = EverestPrimus.key("ep_6pin", "c124", "326163 23645")
     # export_step(key, "ep_key.step")
     # key = Everest.key("e29_6pin", "s123", "878587")
     # export_step(key, "ep_key.step")
-    key = EverestSL.key("e29sl_ctrl", "r125", "2701507")
-    export_step(key, "e29sl_key.step")
+    # key = EverestSL.key("e29sl_ctrl", "r125", "2701507")
+    # export_step(key, "e29sl_key.step")
     show_all()
