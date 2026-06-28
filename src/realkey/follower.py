@@ -44,7 +44,7 @@ FOLLOWER_DEFINITIONS: dict[str, FollowerConfigData | None] = {
         {"pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
     ),
     "Schlage": FollowerConfigData(70 * MM, 0.495 * IN, "schlage", {}, "slot", {"slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}),
-    "West 917 - LX Format": FollowerConfigData(
+    "West 917": FollowerConfigData(
         60 * MM,
         11.95 * MM,
         "tongue",
