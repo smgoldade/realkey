@@ -1,4 +1,4 @@
-from math import atan2, sqrt, pi
+from math import atan2, pi, sqrt
 
 from build123d import *
 
@@ -38,9 +38,10 @@ class Memolis(key.Key):
     def basic_bitting_definition(cls) -> str:
         return (
             "<b>Cuts:</b> Up to 14, defined from bow to tip, right side before left.<br>"
+            "<i>Separate each sides cuts with a space.</i><br>"
             "<b>Depths:</b> Maximum lift 0 to minimum lift 5<br>"
             "On Memolis 2, any 0 cut will disable that lever on key change.<br>"
-            "<b>Example:</b> <i>40503325050251 represetns 4050332 on the right, 5050251 on the left</i>"
+            "<b>Example:</b> <i>4050332 5050251 represetns 4050332 on the right, 5050251 on the left</i>"
         )
 
     @classmethod
@@ -49,22 +50,37 @@ class Memolis(key.Key):
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
-        if len(bitting) > 14:
-            raise ValueError("Maximum supported cuts for Memolis is 14")
+        if not bitting:
+            return
+        if len(bitting.split()) == 1:
+            raise ValueError("No left side cuts specified")
+        if len(bitting.split()) != 2:
+            raise ValueError("Invalid amount of spaces in bitting input")
 
-        if not bitting.isnumeric():
+        r_bitting, l_bitting = bitting.split()
+
+        if len(r_bitting) > 7:
+            raise ValueError("Only up to 7 cuts are allowed on the right side")
+        if len(l_bitting) > 7:
+            raise ValueError("Only up to 7 cuts are allowed on the left side")
+
+        if not r_bitting.isnumeric() or not l_bitting.isnumeric():
             raise ValueError("Only numeric cuts are allowed")
 
-        for cut in bitting:
+        for cut in r_bitting:
             if int(cut) < 0 or int(cut) > 5:
-                raise ValueError("Cut depths must be from 0 to 5")
+                raise ValueError("Right cut depths must be from 0 to 5")
+        for cut in l_bitting:
+            if int(cut) < 0 or int(cut) > 5:
+                raise ValueError("Left cut depths must be from 0 to 5")
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
-        if not resource_fetcher.pre_fetch_resource("resources/Opnus/Memolis.svg"):
+        resource_path = resource_fetcher.fetch_resource("resources/Opnus/Memolis.svg")
+        if resource_path is None:
             raise ValueError("Unable to load Opnus Memolis SVG")
 
-        opnus_svg = import_svg("resources/Opnus/Memolis.svg", flip_y=False, label_by="inkscape:label")
+        opnus_svg = import_svg(resource_path, flip_y=False, label_by="inkscape:label")
         profile_face = svgtools.get_starting_at_origin(opnus_svg, "#profile_" + profile)
         keyway_face = svgtools.get_centered_around_origin(opnus_svg, "#keyway_" + keyway)
         keyway_face = keyway_face.mirror(Plane.XZ)
@@ -124,6 +140,12 @@ class Memolis(key.Key):
     def key(cls, profile: str, keyway: str, bitting: str) -> Part:
         cls.validate_bitting(profile, keyway, bitting)
 
+        memolis_blank = cls.blank(profile, keyway)
+        if not bitting:
+            return memolis_blank
+
+        right_cuts, left_cuts = bitting.split()
+
         def cutter_for_side(cuts: str, is_right_side: bool):
             cutter = Part()
             mirror_plane_1 = Plane.XZ.offset(-cls.MEMOLIS_KEY_Y_DATUM - cls.MEMOLIS_KEY_HEIGHT / 2)
@@ -141,7 +163,7 @@ class Memolis(key.Key):
                     cut_y += cls.MEMOLIS_KEY_HEIGHT
 
                 cutter_tool = cls.key_cutter()
-                if cutter_tool == None:
+                if cutter_tool is None:
                     return Part()
                 cutter_tool = Pos(0, 0, -cut_depth - cls.MEMOLIS_CUT_SURFACE_WIDTH / 2) * cutter_tool
                 cutter_tool = Location((cut_x, cut_y, cls.MEMOLIS_KEY_WIDTH), (rotation, 0, 0)) * cutter_tool
@@ -152,14 +174,10 @@ class Memolis(key.Key):
                 cutter += cutter_tool2
             return cutter
 
-        right_cuts = bitting[: int(len(bitting) / 2)]
-        left_cuts = bitting[int(len(bitting) / 2) :]
-
-        key = cls.blank(profile, keyway)
         cutter_right = cutter_for_side(right_cuts, True)
         cutter_left = cutter_for_side(left_cuts, False)
 
-        return Part(key - (cutter_right + cutter_left))
+        return Part(memolis_blank - (cutter_right + cutter_left))
 
 
 if __name__ == "__main__":

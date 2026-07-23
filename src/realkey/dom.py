@@ -41,8 +41,9 @@ class SystemD(key.Key):
     def basic_bitting_definition(cls) -> str:
         return (
             "<b>Cuts:</b> Up to 10, defined from bow to tip, right side before left side.<br>"
+            "<i>Separate each sides cuts with a space.</i><br>"
             "<b>Depths:</b> Maximum Lift 1 to Minimum Lift 5<br>"
-            "<b>Example:</b> <i>5233342424</i>"
+            "<b>Example:</b> <i>52333 42424</i>"
         )
 
     @classmethod
@@ -50,31 +51,45 @@ class SystemD(key.Key):
         return None
 
     @classmethod
-    def validate_bitting(cls, profile: str, keyway: str, bitting: str):
-        if len(bitting) > 10:
-            raise ValueError("Only up to 10 cuts are allowed")
-        if len(bitting) % 2 != 0:
-            raise ValueError("Number of cuts must be even")
-        if not bitting.isnumeric():
+    def validate_bitting(cls, profile: str, keyway: str, bitting: str) -> None:
+        if not bitting:
+            return
+        if len(bitting.split()) == 1:
+            raise ValueError("No left side cuts specified")
+        if len(bitting.split()) != 2:
+            raise ValueError("Invalid amount of spaces in bitting input")
+
+        r_bitting, l_bitting = bitting.split()
+
+        if len(r_bitting) > 5:
+            raise ValueError("Only up to 5 cuts are allowed on the right side")
+        if len(l_bitting) > 5:
+            raise ValueError("Only up to 5 cuts are allowed on the left side")
+        if not r_bitting.isnumeric() or not l_bitting.isnumeric():
             raise ValueError("Only numeric cuts are allowed")
 
-        for cut in bitting:
+        for cut in r_bitting:
             if int(cut) < 1 or int(cut) > 5:
-                raise ValueError("Cut depths must be from 1 to 5")
+                raise ValueError("Right cut depths must be from 1 to 5")
+        for cut in l_bitting:
+            if int(cut) < 1 or int(cut) > 5:
+                raise ValueError("Left cut depths must be from 1 to 5")
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
         if keyway == "1":
-            if not resource_fetcher.pre_fetch_resource("resources/DOM/SystemD_B1.step"):
+            resource_path = resource_fetcher.fetch_resource("resources/DOM/SystemD_B1.step")
+            if resource_path is None:
                 raise ValueError("Unable to load DOM Keyway 1 blank")
             with BuildPart() as step_blank:
-                add(import_step("resources/DOM/SystemD_B1.step"))
+                add(import_step(resource_path))
             blank = step_blank.part
         else:
-            if not resource_fetcher.pre_fetch_resource("resources/DOM/SystemD.svg"):
+            resource_path = resource_fetcher.fetch_resource("resources/DOM/SystemD.svg")
+            if resource_path is None:
                 raise ValueError("Unable to load DOM SVG")
 
-            dom_svg = import_svg("resources/DOM/SystemD.svg", label_by="inkscape:label")
+            dom_svg = import_svg(resource_path, label_by="inkscape:label")
             blank_profile = svgtools.get_starting_at_origin(dom_svg, "#profile")
             blade_profile, bow_profile = split(blank_profile, bisect_by=Plane.YZ.offset(cls.SD_X_DATUM), keep=Keep.BOTH)
             bow_inset_profile = svgtools.get_starting_at_origin(dom_svg, "#inset_bow")
@@ -90,9 +105,9 @@ class SystemD(key.Key):
             d_text = d_text.rotate(Axis.Z, 90)
 
             if not isinstance(bow_profile, Face):
-                raise ValueError("Bow sucks")
+                raise ValueError("Bow is not a face")
             if not isinstance(blade_profile, Face):
-                raise ValueError("Blade sucks")
+                raise ValueError("Blade is not a face")
 
             with BuildPart() as blank:
                 with BuildSketch():
@@ -146,8 +161,7 @@ class SystemD(key.Key):
 
         blank = cls.blank(profile, keyway)
 
-        right_cuts = bitting[: int(len(bitting) / 2)]
-        left_cuts = bitting[int(len(bitting) / 2) :]
+        right_cuts, left_cuts = bitting.split()
 
         center_line = cls.SD_BOW_WIDTH / 2
 
@@ -164,7 +178,8 @@ class SystemD(key.Key):
                 nx = lc[0] + cls.SD_CUT_SPACE
                 final_cuts.append((nx, lc[1]))
 
-            final_cuts.append(final_cuts[-1])
+            # Add a ghost cut at the same height to trim any trailing steeple
+            final_cuts.append((final_cuts[-1][0] + 50 * MM, final_cuts[-1][1]))
             return final_cuts
 
         r_cuts = calculate_cuts(right_cuts, cls.SD_R_CUT_SPACINGS)

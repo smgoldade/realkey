@@ -1,4 +1,5 @@
 from build123d import *
+
 from realkey import key, key_cutters, resource_fetcher, svgtools
 
 SCHLAGE_ROOT_DEPTHS = [0.335 * IN - i * 0.015 * IN for i in range(10)]
@@ -32,9 +33,10 @@ class EverestKeyway:
         family = keyway_tag[0]
         species = keyway_tag[1:]
 
-        if not resource_fetcher.pre_fetch_resource("resources/Schlage/Everest.svg"):
+        resource_path = resource_fetcher.fetch_resource("resources/Schlage/Everest.svg")
+        if resource_path is None:
             raise ValueError("Unable to load Schlage Everest SVG")
-        everest_svg = import_svg("resources/Schlage/Everest.svg", flip_y=False, label_by="inkscape:label")
+        everest_svg = import_svg(resource_path, flip_y=False, label_by="inkscape:label")
         keyway_base = svgtools.get_starting_at_origin(everest_svg, "#keyway_" + family)
 
         notches = cls.KEYWAY_NOTCHES[species]
@@ -218,9 +220,9 @@ class EverestBlank:
     EVEREST_SL_KEY_BLADE_HEIGHT = 8.15 * MM
 
     EVEREST_X_DATUM = 31.400 * MM
-    EVEREST_Y_DATUM = 10.725 * MM
-    EVEREST_Y2_DATUM = 19.338 * MM
-    EVEREST_SL_Y_DATUM = 11 * MM
+    EVEREST_Y_DATUM = 10.725 * MM  # top of blade
+    EVEREST_Y2_DATUM = 19.338 * MM  # bottom of blade
+    EVEREST_SL_Y_DATUM = 11 * MM  # top of blade for SL
     EVEREST_SIDEBAR_Y_DATUM = 19.437 * MM
     EVEREST_SIDEBAR_WIDTH = 1.2 * MM
 
@@ -257,10 +259,11 @@ class EverestBlank:
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
-        if not resource_fetcher.pre_fetch_resource("resources/Schlage/Everest.svg"):
+        resource_path = resource_fetcher.fetch_resource("resources/Schlage/Everest.svg")
+        if resource_path is None:
             raise ValueError("Unable to load Schlage Everest SVG")
 
-        everest_svg = import_svg("resources/Schlage/Everest.svg", flip_y=False, label_by="inkscape:label")
+        everest_svg = import_svg(resource_path, flip_y=False, label_by="inkscape:label")
 
         lookup_profile = ""
         if profile in ["e_6pin", "ep_6pin"]:
@@ -287,6 +290,8 @@ class EverestBlank:
             blade_height = cls.EVEREST_SL_KEY_BLADE_HEIGHT
 
         blank_profile = svgtools.get_starting_at_origin(everest_svg, "#profile_" + lookup_profile)
+        if not isinstance(blank_profile, Face):
+            raise TypeError("Expected blank profile to be a Face")
         blank = extrude(blank_profile, cls.EVEREST_KEY_WIDTH)
 
         keyway_shape = EverestKeyway.build_keyway(keyway)
@@ -380,6 +385,8 @@ class Everest(key.Key, EverestBlank):
         cls.validate_bitting(profile, keyway, bitting)
 
         everest_blank = cls.blank(profile, keyway)
+        if not bitting:
+            return everest_blank
 
         cut_points: list[tuple[float, float]] = []
 
@@ -391,7 +398,7 @@ class Everest(key.Key, EverestBlank):
             cut_y = cls.EVEREST_Y2_DATUM - SCHLAGE_ROOT_DEPTHS[depth_index]
             cut_points.append((cut_x, cut_y))
         # Add a ghost cut at the same height to trim any trailing steeple
-        cut_points.append((cut_points[-1][0] + 10*MM, cut_points[-1][1]))
+        cut_points.append((cut_points[-1][0] + 10 * MM, cut_points[-1][1]))
         angled_cutter = key_cutters.smooth_angled_cutter(cut_points, SCHLAGE_CUT_WIDTH, cls.EVEREST_Y_DATUM - 0.25 * MM, SCHLAGE_CUT_ANGLE)
 
         with BuildPart() as everest_key:
@@ -466,6 +473,8 @@ class EverestSL(key.Key, EverestBlank):
         cls.validate_bitting(profile, keyway, bitting)
 
         everest_blank = cls.blank(profile, keyway)
+        if not bitting:
+            return everest_blank
 
         cut_points: list[tuple[float, float]] = []
 
@@ -553,6 +562,9 @@ class EverestPrimus(key.Key, EverestBlank):
         cls.validate_bitting(profile, keyway, bitting)
 
         primus_blank = cls.blank(profile, keyway)
+        if not bitting:
+            return primus_blank
+
         main_bitting, sidebar_bitting = bitting.split(" ")
 
         main_cut_points: list[tuple[float, float]] = []
@@ -566,7 +578,7 @@ class EverestPrimus(key.Key, EverestBlank):
             cut_y = cls.EVEREST_Y2_DATUM - SCHLAGE_ROOT_DEPTHS[depth_index]
             main_cut_points.append((cut_x, cut_y))
         # Add a ghost cut at the same height to trim any trailing steeple
-        main_cut_points.append((main_cut_points[-1][0] + 10*MM, main_cut_points[-1][1]))
+        main_cut_points.append((main_cut_points[-1][0] + 10 * MM, main_cut_points[-1][1]))
 
         for i, cut in enumerate(sidebar_bitting):
             pin_index = int(cut) - 1
@@ -597,13 +609,13 @@ class EverestPrimus(key.Key, EverestBlank):
 if __name__ == "__main__":
     from ocp_vscode import *
 
-    #keyway = EverestKeyway.build_keyway("r235")
+    # keyway = EverestKeyway.build_keyway("r235")
     # sb = EverestPrimus.blank("e29p_ctrl", "s124")
     # export_step(sb, "e29_blank.step")
     # key = EverestPrimus.key("ep_6pin", "c124", "326163 23645")
     # export_step(key, "ep_key.step")
-    key = Everest.key("e29_6pin", "s123", "879597")
+    # key = Everest.key("e29_6pin", "s123", "879597")
     # export_step(key, "ep_key.step")
-    # key = EverestSL.key("e29sl_ctrl", "r125", "2701507")
+    key = EverestSL.key("e29sl_ctrl", "r125", "2701507")
     # export_step(key, "e29sl_key.step")
     show_all()

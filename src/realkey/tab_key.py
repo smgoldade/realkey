@@ -1,6 +1,19 @@
 from pyscript import web, when
 
-from realkey import key, tab, web_core, web_main, assa, dom, miwa, opnus, paclock, sargentandgreenleaf, schlage, vsr
+from realkey import (
+    assa,
+    dom,
+    key,
+    miwa,
+    opnus,
+    paclock,
+    sargentandgreenleaf,
+    schlage,
+    tab,
+    vsr,
+    web_core,
+    web_main,
+)
 
 key_select = web_core.SelectElement(web.page["key-select"])
 profile_select = web_core.SelectElement(web.page["profile-select"])
@@ -11,7 +24,7 @@ bitting = web_core.StringValueElement(web.page["bitting"])
 advanced_bitting_info = web_core.Element(web.page["advanced-bitting-info"])
 
 
-def get_selected_key() -> key.Key | None:
+def get_selected_key() -> type[key.Key] | None:
     key_tag = key_select.selected_value
     if key_tag == "null":
         return None
@@ -22,26 +35,26 @@ def get_selected_key() -> key.Key | None:
 def run_validation():
     selected_key = get_selected_key()
     if selected_key is None:
-        web_main.info.html = ""
-        web_main.generate.enabled = False
+        web_main.set_info("")
+        web_main.set_generation_valid(False)
         return
-    if len(bitting.stripped_value) == 0:
-        web_main.info.html = ""
-        web_main.generate.enabled = True
+    if not bitting.stripped_value:
+        web_main.set_info("")
+        web_main.set_generation_valid(True)
         return
     try:
         selected_key.validate_bitting(profile_select.selected_value, keyway_select.selected_value, bitting.stripped_value)
-        web_main.info.html = ""
-        web_main.generate.enabled = True
+        web_main.set_info("")
+        web_main.set_generation_valid(True)
     except Exception as e:
-        web_main.info.html = f"<span style='color:#800'>{e}</span>"
-        web_main.generate.enabled = False
+        web_main.set_info(str(e), True)
+        web_main.set_generation_valid(False)
 
 
 def load_profiles_and_keyways():
     selected_key = get_selected_key()
-    web_main.info.html = ""
-    web_main.model_generating.html = ""
+    web_main.set_info("")
+    web_main.clear_model_status()
 
     if selected_key is None:
         profile_select.populate("No profiles loaded...", {})
@@ -53,7 +66,7 @@ def load_profiles_and_keyways():
         profile_select.enabled = False
         keyway_select.enabled = False
         bitting.enabled = False
-        web_main.generate.enabled = False
+        web_main.set_generation_valid(False)
         return
 
     profile_select.populate("", selected_key.profiles())
@@ -70,7 +83,7 @@ def load_profiles_and_keyways():
     profile_select.enabled = True
     keyway_select.enabled = True
     bitting.enabled = True
-    web_main.generate.enabled = True
+    web_main.set_generation_valid(True)
 
 
 @when("change", "#key-select")
@@ -93,7 +106,7 @@ def get_pretty_name() -> str:
     return f"{key_select.selected_html} - {profile_select.selected_html} - {keyway_select.selected_html} - {bitting.stripped_value if len(bitting.stripped_value) > 0 else 'Blank'}"
 
 
-@when("keyup", "#bitting")
+@when("input", "#bitting")
 def bitting_change():
     run_validation()
 
@@ -152,19 +165,22 @@ class KeyTab(tab.Tab):
 
         def set_bitting(bittin: str):
             bitting.value = bittin
+            run_validation()
 
         self._populate_param(query_params, "bitting", set_bitting)
 
-    async def generate(self, bg_worker) -> dict[str, str]:
+    async def generate(self, bg_worker) -> tab.GenerationResult:
         selected_key = get_selected_key()
         if selected_key is None:
             return {"error": "No key selected"}
 
-        gen_keys = (await bg_worker.generate_key(selected_key.tag(), profile_select.selected_value, keyway_select.selected_value, bitting.stripped_value)).to_py()  # type: ignore
+        gen_keys: tab.GenerationResult = {}
+        gen_keys["description"] = get_pretty_name()
+
+        gen_keys.update((await bg_worker.generate_key(selected_key.tag(), profile_select.selected_value, keyway_select.selected_value, bitting.stripped_value)).to_py())
         if "error" in gen_keys:
             return gen_keys
 
-        gen_keys["description"] = get_pretty_name()
         gen_keys["roughness"] = 0.25
         gen_keys["metalness"] = 0.95
 

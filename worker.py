@@ -1,3 +1,5 @@
+import binascii
+
 import micropip
 
 
@@ -19,9 +21,21 @@ print("[BG] Installing packages - typing-extensions")
 await micropip.install("typing-extensions", keep_going=True)
 print("[BG] Packages installed")
 
-import binascii
 from build123d import *
-from realkey import key, resource_fetcher, assa, dom, miwa, opnus, paclock, sargentandgreenleaf, schlage, vsr, follower
+
+from realkey import (
+    assa,
+    dom,
+    follower,
+    key,
+    miwa,
+    opnus,
+    paclock,
+    resource_fetcher,
+    sargentandgreenleaf,
+    schlage,
+    vsr,
+)
 
 
 def shared_generate(part: Part) -> dict[str, str]:
@@ -38,11 +52,11 @@ def shared_generate(part: Part) -> dict[str, str]:
 
 
 def generate_key(key_tag: str, profile: str, keyway: str, bitting: str) -> dict[str, str]:
-    key_class: key.Key = key.Key._list[key_tag]
+    key_class: type[key.Key] = key.Key._list[key_tag]
 
     try:
         generated_key: Part | None = None
-        if len(bitting) == 0:
+        if not bitting:
             generated_key = key_class.blank(profile, keyway)
         else:
             generated_key = key_class.key(profile, keyway, bitting)
@@ -55,11 +69,11 @@ def generate_key(key_tag: str, profile: str, keyway: str, bitting: str) -> dict[
 
 
 def generate_key_art(key_tag: str, profile: str, keyway: str, bitting: str) -> dict[str, str]:
-    key_class: key.Key = key.Key._list[key_tag]
+    key_class: type[key.Key] = key.Key._list[key_tag]
 
     try:
         generated_key: Part | None = None
-        if len(bitting) == 0:
+        if not bitting:
             generated_key = key_class.blank(profile, keyway)
         else:
             generated_key = key_class.key(profile, keyway, bitting)
@@ -88,7 +102,7 @@ def generate_key_art(key_tag: str, profile: str, keyway: str, bitting: str) -> d
 def generate_follower(length: float, diameter: float, top_tag: str, top_config: dict[str, float], bottom_tag: str, bottom_config: dict[str, float]) -> dict[str, str]:
     try:
         generated_follower = follower.Follower.generate(follower.FollowerConfigData(length, diameter, top_tag, top_config.to_py(), bottom_tag, bottom_config.to_py()))
-        if generate_follower is None:
+        if generated_follower is None:
             return {"error": "No follower generated!"}
 
         return shared_generate(generated_follower)

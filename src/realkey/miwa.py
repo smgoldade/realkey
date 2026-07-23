@@ -40,7 +40,7 @@ class SR(key.Key):
     def advanced_bitting_definition(cls) -> str | None:
         return (
             "<h2>MIWA SR Bitting</h2>"
-            "<div class='even-flex'>"
+            "<div class='even-flex advanced-bitting-tables'>"
             "<table><caption>Key Width</caption>"
             "<thead><tr><th>Cut</th><th>Width</th></tr></thead>"
             "<tbody>"
@@ -50,7 +50,7 @@ class SR(key.Key):
             f"<tr><td>3</td><td>{cls.SR_KEY_BLADE_HEIGHT - 2 * cls.SR_CUT_DEPTHS[3]}mm</td></tr>"
             "</tbody></table>"
             "<table><caption>Cut Depth</caption>"
-            "<thead><tr><th>Cut</th><th>Width</th></tr></thead>"
+            "<thead><tr><th>Cut</th><th>Depth</th></tr></thead>"
             "<tbody>"
             f"<tr><td>0</td><td>{cls.SR_CUT_DEPTHS[0]}mm</td></tr>"
             f"<tr><td>1</td><td>{cls.SR_CUT_DEPTHS[1]}mm</td></tr>"
@@ -74,10 +74,10 @@ class SR(key.Key):
             "</div>"
             "<div><h3>Keyed</h3>"
             "An example key decoding is provided below, note the dead space after the 8th bitting, this is because the SR lacks a slider/wafer in this position."
-            "<div class='even-flex'><img src='resources/MIWA/SR_Key_Decode.png'/></div>"
+            "<div class='even-flex'><img src='src/realkey/resources/MIWA/SR_Key_Decode.png'/></div>"
             "</div><h3>Keyless</h3>"
             "Removing the core from the housing, bitting can be read from where to wafers sit at rest. An example decoding is provided below."
-            "<div class='even-flex'><img src='resources/MIWA/SR_Lock_Decode.png'/></div>"
+            "<div class='even-flex'><img src='src/realkey/resources/MIWA/SR_Lock_Decode.png'/></div>"
             "</div>"
         )
 
@@ -94,9 +94,10 @@ class SR(key.Key):
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
-        if not resource_fetcher.pre_fetch_resource("resources/MIWA/SR.svg"):
+        resource_path = resource_fetcher.fetch_resource("resources/MIWA/SR.svg")
+        if resource_path is None:
             raise ValueError("Unable to load MIWA SR SVG")
-        miwa_svg = import_svg("resources/MIWA/SR.svg", flip_y=False, label_by="inkscape:label")
+        miwa_svg = import_svg(resource_path, flip_y=False, label_by="inkscape:label")
         profile_face = svgtools.get_starting_at_origin(miwa_svg, "#profile_sr_" + profile)
         keyway_face = svgtools.get_centered_around_origin(miwa_svg, "#keyway_" + keyway)
         keyway_face.translate((1, 0, 0))
@@ -147,8 +148,9 @@ class SR(key.Key):
 if __name__ == "__main__":
     from ocp_vscode import *
 
-    # sr_blank = SR.blank("10cut", "sr")
+    sr_blank = SR.blank("10cut", "sr")
+    print(sr_blank.is_valid)
     # export_step(sr_blank, "sr_blank.step")
-    sr_key = SR.key("10cut", "sr", "1101203021")
+    # sr_key = SR.key("10cut", "sr", "1101203021")
     # export_step(sr_key, "sr_key.step")
     show_all()

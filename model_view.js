@@ -1,31 +1,56 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { STLLoader } from 'three/addons/loaders/STLLoader.js';
-import WebGL from 'three/addons/capabilities/WebGL.js';
+import * as THREE from "three"
+import WebGL from "three/addons/capabilities/WebGL.js"
+import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js"
+import { STLLoader } from "three/addons/loaders/STLLoader.js"
 
-// WebGL checks for Chumi
+const ENVIRONMENT_INTENSITY = 0.6
+const MAX_PIXEL_RATIO = 2
+const MIN_OBJECT_RADIUS = 0.001
+const FIT_PADDING = 1.2
+const MATERIAL_ENVIRONMENT_INTENSITY = 0.65
+const MATERIAL_SPECULAR_INTENSITY = 0.5
+const TONE_MAPPING_EXPOSURE = 0.72
+
 if (!WebGL.isWebGL2Available()) {
     const status = document.querySelector("#status")
-    status.innerHTML = "WebGL issue detected."
-    status.appendChild(WebGL.getWebGL2ErrorMessage())
-    throw new Error()
+    if (status !== null) {
+        status.textContent = "WebGL issue detected."
+        status.appendChild(WebGL.getWebGL2ErrorMessage())
+    }
+    throw new Error("WebGL 2 is not available")
 }
 
-// Create all Three rendering objects
 const canvas = document.querySelector("#canvas")
-const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000)
+const viewport = document.querySelector("#model-view")
+if (!(canvas instanceof HTMLCanvasElement)) {
+    throw new Error("Model canvas was not found")
+}
+if (!(viewport instanceof HTMLElement)) {
+    throw new Error("Model viewport was not found")
+}
 
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
 const scene = new THREE.Scene()
 const renderGroup = new THREE.Group()
 
-const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true })
-renderer.setSize(canvas.clientWidth, canvas.clientHeight)
-renderer.setPixelRatio(window.devicePixelRatio)
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO))
 renderer.setAnimationLoop(animate)
-renderer.setClearColor(0x222222)
+renderer.setClearColor(0x101314, 0)
+renderer.toneMapping = THREE.ACESFilmicToneMapping
+renderer.toneMappingExposure = TONE_MAPPING_EXPOSURE
 renderer.shadowMap.enabled = true
-renderer.shadowMap.autoUpdate = true
+renderer.shadowMap.autoUpdate = false
 renderer.shadowMap.type = THREE.PCFSoftShadowMap
+
+const roomEnvironment = new RoomEnvironment()
+const pmremGenerator = new THREE.PMREMGenerator(renderer)
+const environmentRenderTarget = pmremGenerator.fromScene(roomEnvironment)
+scene.environment = environmentRenderTarget.texture
+scene.environmentIntensity = ENVIRONMENT_INTENSITY
+roomEnvironment.dispose()
+pmremGenerator.dispose()
 
 const controls = new OrbitControls(camera, renderer.domElement)
 controls.autoRotate = true
@@ -33,104 +58,201 @@ controls.cursorStyle = "grab"
 controls.enableDamping = true
 controls.saveState()
 
-window.addEventListener("resize", () => {
-    let w = canvas.clientWidth
-    let h = canvas.clientHeight
-    let dpr = window.devicePixelRatio
+let currentObject = new THREE.Object3D()
+let objectRadius = null
+let lastFitDistance = null
+renderGroup.add(currentObject)
 
-    camera.aspect = w / h
+function getFitDistance() {
+    if (objectRadius === null) {
+        return null
+    }
+
+    const radius = Math.max(objectRadius, MIN_OBJECT_RADIUS)
+    const verticalFov = THREE.MathUtils.degToRad(camera.fov)
+    const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * camera.aspect)
+    const limitingHalfFov = Math.min(verticalFov, horizontalFov) / 2
+    return radius * FIT_PADDING / Math.sin(limitingHalfFov)
+}
+
+function frameObject(preserveZoom = false) {
+    const fitDistance = getFitDistance()
+    if (fitDistance === null) {
+        return
+    }
+
+    const viewDirection = camera.position.clone().sub(controls.target)
+    const currentDistance = viewDirection.length()
+    if (viewDirection.lengthSq() === 0) {
+        viewDirection.set(0, 0, 1)
+    }
+    viewDirection.normalize()
+
+    // Preserve the user's zoom relative to the fitted model across resizes.
+    const distance = preserveZoom && lastFitDistance !== null && currentDistance > 0
+        ? currentDistance * fitDistance / lastFitDistance
+        : fitDistance
+    lastFitDistance = fitDistance
+
+    const radius = Math.max(objectRadius, MIN_OBJECT_RADIUS)
+    controls.target.set(0, 0, 0)
+    camera.position.copy(viewDirection.multiplyScalar(distance))
+    camera.near = Math.max(0.01, distance - radius * 1.5)
+    camera.far = distance + radius * 4
     camera.updateProjectionMatrix()
+    controls.update()
+}
 
-    renderer.setSize(w, h)
-    renderer.setPixelRatio(dpr)
+function resizeViewport() {
+    const width = Math.max(1, viewport.clientWidth)
+    const height = Math.max(1, viewport.clientHeight)
 
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-})
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO))
+    renderer.setSize(width, height, false)
+    camera.aspect = width / height
+    camera.updateProjectionMatrix()
+    frameObject(true)
+}
 
-var object = new THREE.Object3D()
-renderGroup.add(object)
+let pendingResizeFrame = null
+function scheduleResize() {
+    if (pendingResizeFrame !== null) {
+        cancelAnimationFrame(pendingResizeFrame)
+    }
 
-const ambient = new THREE.AmbientLight(0x404040)
-scene.add(ambient)
+    pendingResizeFrame = requestAnimationFrame(() => {
+        pendingResizeFrame = null
+        resizeViewport()
+    })
+}
 
+const resizeObserver = new ResizeObserver(scheduleResize)
+resizeObserver.observe(viewport)
+window.addEventListener("resize", scheduleResize)
+window.addEventListener("pagehide", () => environmentRenderTarget.dispose(), { once: true })
+scheduleResize()
+
+const AMBIENT_LIGHT_INTENSITY = 0.16
 const LIGHT_COUNT = 10
 const LIGHT_RADIUS = 250
-const LIGHT_STRENGTH = 10
+const LIGHT_STRENGTH = 0.75
+const SHADOW_CASTING_LIGHT_COUNT = 1
+const SHADOW_INTENSITY = 0.4
+const SHADOW_RADIUS = 4
 
-for (var i = 0; i < LIGHT_COUNT; ++i) {
-    // square lattice
-    var x = ((2 * i) / (1 + Math.sqrt(5))) % 1
-    var y = i / (LIGHT_COUNT - 1)
-    // disc lattice
-    var theta = 2 * Math.PI * x
-    var phi = Math.acos(1 - 2 * y)
-    // spherical lattice
-    x = LIGHT_RADIUS * Math.cos(theta) * Math.sin(phi)
-    y = LIGHT_RADIUS * Math.sin(theta) * Math.sin(phi)
-    var z = LIGHT_RADIUS * Math.cos(phi)
+const ambientLight = new THREE.AmbientLight(0xFFFFFF, AMBIENT_LIGHT_INTENSITY)
+scene.add(ambientLight)
 
-    const l1 = new THREE.DirectionalLight(0xFFFFFF, LIGHT_STRENGTH / LIGHT_COUNT)
-    l1.position.set(x, y, z)
-    l1.castShadow = true
-    l1.shadow.bias = -0.0005
-    l1.shadow.camera.top = LIGHT_RADIUS
-    l1.shadow.camera.bottom = -LIGHT_RADIUS
-    l1.shadow.camera.left = -LIGHT_RADIUS
-    l1.shadow.camera.right = LIGHT_RADIUS
-    l1.shadow.camera.near = 1
-    l1.shadow.camera.far = 1000
-    l1.shadow.mapSize.width = 1024
-    l1.shadow.mapSize.height = 1024
+for (let index = 0; index < LIGHT_COUNT; index += 1) {
+    const latticePosition = ((2 * index) / (1 + Math.sqrt(5))) % 1
+    const verticalPosition = index / (LIGHT_COUNT - 1)
+    const theta = 2 * Math.PI * latticePosition
+    const phi = Math.acos(1 - 2 * verticalPosition)
+    const x = LIGHT_RADIUS * Math.cos(theta) * Math.sin(phi)
+    const y = LIGHT_RADIUS * Math.sin(theta) * Math.sin(phi)
+    const z = LIGHT_RADIUS * Math.cos(phi)
 
-    renderGroup.add(l1)
+    const light = new THREE.DirectionalLight(0xFFFFFF, LIGHT_STRENGTH / LIGHT_COUNT)
+    light.position.set(x, y, z)
+    light.castShadow = index < SHADOW_CASTING_LIGHT_COUNT
+    if (light.castShadow) {
+        light.shadow.bias = -0.0005
+        light.shadow.intensity = SHADOW_INTENSITY
+        light.shadow.radius = SHADOW_RADIUS
+        light.shadow.camera.top = LIGHT_RADIUS
+        light.shadow.camera.bottom = -LIGHT_RADIUS
+        light.shadow.camera.left = -LIGHT_RADIUS
+        light.shadow.camera.right = LIGHT_RADIUS
+        light.shadow.camera.near = 1
+        light.shadow.camera.far = 1000
+        light.shadow.mapSize.width = 1024
+        light.shadow.mapSize.height = 1024
+    }
+
+    renderGroup.add(light)
 }
 
 renderGroup.add(camera)
 scene.add(renderGroup)
 
-var lastTime = 0;
+let lastAnimationTime = null
 function animate(time) {
-    var deltaTime = (time - lastTime) / 1000
-    lastTime = time
+    const deltaSeconds = lastAnimationTime === null ? 0 : (time - lastAnimationTime) / 1000
+    lastAnimationTime = time
 
-    controls.update(deltaTime)
+    controls.update(deltaSeconds)
     renderer.render(scene, camera)
 }
 
 async function loadStl(file, roughness = 0.5, metalness = 0.5, color = 0xE3BD7A) {
-    const stlLoader = new STLLoader()
-    var geometry = await stlLoader.loadAsync(file)
-    var brassMaterial = new THREE.MeshPhysicalMaterial({
-        color: color,
-        roughness: roughness,
-        metalness: metalness
+    const loader = new STLLoader()
+    const geometry = await loader.loadAsync(file)
+    const material = new THREE.MeshPhysicalMaterial({
+        color,
+        envMapIntensity: MATERIAL_ENVIRONMENT_INTENSITY,
+        metalness,
+        roughness,
+        specularIntensity: MATERIAL_SPECULAR_INTENSITY,
     })
-    return new THREE.Mesh(geometry, brassMaterial)
+    return new THREE.Mesh(geometry, material)
+}
+
+function disposeObject(target) {
+    target.geometry?.dispose()
+
+    if (Array.isArray(target.material)) {
+        for (const material of target.material) {
+            material.dispose()
+        }
+    } else {
+        target.material?.dispose()
+    }
+}
+
+function prepareObject(target) {
+    target.geometry.computeBoundingBox()
+    const boundingBox = target.geometry.boundingBox
+    if (boundingBox === null) {
+        throw new Error("Unable to calculate the model bounds")
+    }
+
+    const center = new THREE.Vector3()
+    boundingBox.getCenter(center)
+
+    // Center all axes so asymmetric models orbit around their true center.
+    target.geometry.translate(-center.x, -center.y, -center.z)
+    target.geometry.computeBoundingSphere()
+    const boundingSphere = target.geometry.boundingSphere
+    if (boundingSphere === null || !Number.isFinite(boundingSphere.radius)) {
+        throw new Error("Unable to calculate the model radius")
+    }
+
+    target.position.set(0, 0, 0)
+    target.rotation.z = -Math.PI / 2
+    target.castShadow = true
+    target.receiveShadow = true
+    return boundingSphere.radius
 }
 
 export async function loadObject(file, roughness = 0.5, metalness = 0.5, color = 0xE3BD7A) {
-    renderGroup.remove(object)
-    if ("geometry" in object)
-        object.geometry.dispose()
-    if ("material" in object)
-        object.material.dispose()
-    object = await loadStl(file, roughness, metalness, color)
+    const newObject = await loadStl(file, roughness, metalness, color)
 
-    object.geometry.computeBoundingBox()
-    var boundingBox = object.geometry.boundingBox
-    var center = new THREE.Vector3()
-    boundingBox.getCenter(center)
-    var boundedSize = boundingBox.max.sub(boundingBox.min)
-    var size = boundedSize.length()
+    let newObjectRadius
+    try {
+        newObjectRadius = prepareObject(newObject)
+    } catch (error) {
+        disposeObject(newObject)
+        throw error
+    }
 
-    object.translateX(-center.x)
-    object.translateY(-center.y)
-    object.pivot = center
-    object.rotation.z = -Math.PI / 2
-    object.castShadow = true
-    object.receiveShadow = true
+    const previousObject = currentObject
+    currentObject = newObject
+    objectRadius = newObjectRadius
+    lastFitDistance = null
 
-    camera.position.z = size * 0.75
-    renderGroup.add(object)
+    renderGroup.add(newObject)
+    renderGroup.remove(previousObject)
+    disposeObject(previousObject)
+    frameObject()
+    renderer.shadowMap.needsUpdate = true
 }

@@ -1,14 +1,17 @@
-from build123d import Part
 from abc import ABC, abstractmethod
+from typing import ClassVar
+
+from build123d import Part
 
 
 class Key(ABC):
     """A class that all Keys should extend and define the methods of for a common key generation scheme"""
 
-    _list = {}
+    _list: ClassVar[dict[str, type["Key"]]] = {}
 
     def __init_subclass__(cls, **kwargs):
         """Used to have a list of all current keys available for generation"""
+        super().__init_subclass__(**kwargs)
         Key._list[cls.tag()] = cls
 
     @classmethod
@@ -25,6 +28,14 @@ class Key(ABC):
     @abstractmethod
     def profiles(cls) -> dict[str, dict[str, str]]:
         """Returns the possible profiles for this key"""
+
+    @classmethod
+    def profile_name(cls, profile: str) -> str:
+        for _,v in cls.profiles().items():
+            for l,u in v.items():
+                if l == profile:
+                    return u
+        return ""
 
     @classmethod
     @abstractmethod

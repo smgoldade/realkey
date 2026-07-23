@@ -52,12 +52,15 @@ class PR1(key.Key):
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
-        if not resource_fetcher.pre_fetch_resource("resources/Paclock/PR1.svg"):
+        resource_path = resource_fetcher.fetch_resource("resources/Paclock/PR1.svg")
+        if resource_path is None:
             raise ValueError("Unable to load Paclock SVG")
 
-        paclock_svg = import_svg("resources/Paclock/PR1.svg", flip_y=False, label_by="inkscape:label")
+        paclock_svg = import_svg(resource_path, flip_y=False, label_by="inkscape:label")
 
         blank_profile = svgtools.get_starting_at_origin(paclock_svg, "#profile_" + profile)
+        if not isinstance(blank_profile, Face):
+            raise TypeError("Blank profile not a valid Face")
         blank = extrude(blank_profile, cls.PR1_KEY_WIDTH)
 
         keyway_shape = svgtools.get_centered_around_origin(paclock_svg, "#keyway_" + keyway)
@@ -80,6 +83,8 @@ class PR1(key.Key):
         cls.validate_bitting(profile, keyway, bitting)
 
         pr1_blank = cls.blank(profile, keyway)
+        if not bitting:
+            return pr1_blank
 
         cuts: list[tuple[float, float]] = []
         for i, cut in enumerate(bitting):

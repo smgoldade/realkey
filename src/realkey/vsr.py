@@ -77,17 +77,21 @@ class _2000(key.Key):
             "</table>"
             "</div>"
             "<div><h3>Pinning Info</h3>"
-            "The left and right side pinning can ony support cuts 2 through 5. Cut 1 cannot be lifted to correct height even with a full width key blade. The sides use 2mm inset on each chamber, allowing 0.7mm protrusion into the keyway by default.<br>" \
-            "The top appears to only use cuts 1 and 3. The 3rd space is offset to the side and always has a 1 cut in it, unsprung, to act as warding. The top chambers have a 1.8mm inset on each chamber, causing protrusion into the chamber to be slightly different than side pins. Cut 5 cannot fit in the top row.<br>"
+            "The left and right side pinning can ony support cuts 2 through 5. Cut 1 cannot be lifted to correct height even with a full width key blade. The sides use 2mm inset on each chamber, allowing 0.7mm protrusion into the keyway by default.<br>"
+            "The top appears to only use cuts 1 and 3, but 2 is legal. The 3rd space is offset to the side and always has a 1 cut in it, unsprung, to act as warding. The top chambers have a 1.8mm inset on each chamber, causing protrusion into the chamber to be slightly different than side pins. Cut 5 cannot fit in the top row.<br>"
             "Drivers are balanced, with the top stack using slightly shorter drivers for the same cut to make up for the difference in resting height.<br>"
         )
 
     @classmethod
     def validate_bitting(cls, profile: str, keyway: str, bitting: str):
+        if not bitting:
+            return
         if len(bitting.split()) == 1:
             raise ValueError("No top or left cuts specified")
         if len(bitting.split()) == 2:
             raise ValueError("No left cuts specified")
+        if len(bitting.split()) != 3:
+            raise ValueError("Invalid amount of spaces in bitting input")
 
         r_bitting, t_bitting, l_bitting = bitting.split()
 
@@ -102,24 +106,25 @@ class _2000(key.Key):
             raise ValueError("Only numeric cuts are allowed")
 
         for cut in r_bitting:
-            if int(cut) < 1 or int(cut) > 5:
-                raise ValueError("Cut depths must be from 1 to 5")
+            if int(cut) < 2 or int(cut) > 5:
+                raise ValueError("Right cut depths must be from 2 to 5")
         for cut in t_bitting:
-            if int(cut) < 1 or int(cut) > 5:
-                raise ValueError("Cut depths must be from 1 to 5")
+            if int(cut) < 1 or int(cut) > 3:
+                raise ValueError("Top cut depths must be from 1 to 3")
         for cut in l_bitting:
-            if int(cut) < 1 or int(cut) > 5:
-                raise ValueError("Cut depths must be from 1 to 5")
+            if int(cut) < 2 or int(cut) > 5:
+                raise ValueError("Left cut depths must be from 2 to 5")
         return
 
     @classmethod
-    def blank(cls, profile: str, keyway: str) -> key.Part:
+    def blank(cls, profile: str, keyway: str) -> Part:
         blank = None
         res = "resources/VSR/2000-1-1.step"
-        if not resource_fetcher.pre_fetch_resource(res):
-            raise ValueError("Unable to load S&G blank")
+        resource_path = resource_fetcher.fetch_resource(res)
+        if resource_path is None:
+            raise ValueError("Unable to load VSR blank")
         with BuildPart() as step_blank:
-            add(import_step(res))
+            add(import_step(resource_path))
 
             xm = cls.VSR_2000_X_MAX
             with BuildSketch(Plane.XZ):
@@ -143,10 +148,12 @@ class _2000(key.Key):
         return blank
 
     @classmethod
-    def key(cls, profile: str, keyway: str, bitting: str) -> key.Part:
+    def key(cls, profile: str, keyway: str, bitting: str) -> Part:
         cls.validate_bitting(profile, keyway, bitting)
 
         vsr_blank = cls.blank(profile, keyway)
+        if not bitting:
+            return vsr_blank
 
         r_bitting, t_bitting, l_bitting = bitting.split()
 

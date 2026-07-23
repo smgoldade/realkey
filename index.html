@@ -8,7 +8,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://smgoldade.github.io/realkey">
     <meta property="og:description" content="A 3D key and locksport generation system that runs locally in your browser!">
-    <meta property="og:image" content="http://smgoldade.github.io/realkey/resources/SystemDArt.png" id="meta-image"/>
+    <meta property="og:image" content="https://smgoldade.github.io/realkey/src/realkey/resources/SystemDArt.png" id="meta-image"/>
     <meta property="og:image:type" content="image/png"/>
 
     <title>realkey - 3D Locksport Model Generation</title>
@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://pyscript.net">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
-    <link rel="stylesheet" href="https://fonts.bunny.net/css?family=alexandria:400" crossorigin>
+    <link rel="stylesheet" href="https://fonts.bunny.net/css?family=alexandria:400,600,700" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" type="text/css">
     <link rel="stylesheet" href="https://pyscript.net/releases/2026.6.1/core.css" type="text/css">
 
@@ -40,128 +40,132 @@
 
 <body>
     <div id="loader">
-        <div id="status">
-            Loading Python...
+        <div class="loader-panel" role="status" aria-live="polite">
+            <span class="loading-spinner loading-spinner-large" aria-hidden="true"></span>
+            <div class="loader-copy">
+                <strong>Preparing realkey</strong>
+                <span id="status">Loading Python...</span>
+            </div>
         </div>
     </div>
-    <div id="content">
+    <div id="content" class="app-shell">
         <div id="header">
-            <h1 id="header-text">realkey</h1>
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true"><i class="fa-solid fa-key"></i></span>
+                <div class="brand-copy">
+                    <h1 id="header-text">realkey</h1>
+                    <span class="brand-subtitle">Precision locksport model generator</span>
+                </div>
+            </div>
             <div id="header-right">
-                <button class="info-button" popovertarget="share-dialog" title="Share"><i class="fa-solid fa-share"></i></button>
-                <button class="info-button" popovertarget="about-dialog" title="About realkey"><i class="fa-regular fa-circle-question"></i></button>
+                <button class="info-button" popovertarget="share-dialog" title="Share" aria-label="Share configuration"><i class="fa-solid fa-share-nodes"></i></button>
+                <button class="info-button" popovertarget="about-dialog" title="About realkey" aria-label="About realkey"><i class="fa-regular fa-circle-question"></i></button>
             </div>
         </div>
         <div id="main">
             <div class="input-pane">
                 <div class="tab-select">
                     <button id="key-tab-button" class="tablinks active" title="Key"><i class="fa-solid fa-key"></i></button>
-                    <button id="follower-tab-button" class="tablinks" title="Follower"><img src="resources/plug_follower.svg"></button>
+                    <button id="follower-tab-button" class="tablinks" title="Follower"><img src="src/realkey/resources/plug_follower.svg"></button>
                 </div>
-                <hr>
                 <div id="key-tab" class="tab">
-                    <p>
-                        <label for="key-select">Key</label><br />
+                    <div class="field">
+                        <label for="key-select">Key family</label>
                         <select id="key-select" disabled>
                             <option>No keys loaded...</option>
                         </select>
-                    </p>
-                    <p>
+                    </div>
+                    <div class="field">
                         <label for="profile-select">Profile</label><br />
                         <select id="profile-select" disabled>
                             <option>No profiles loaded...</option>
                         </select>
-                    </p>
-                    <p>
+                    </div>
+                    <div class="field">
                         <label for="keyway-select">Keyway</label><br />
                         <select id="keyway-select" disabled>
                             <option>No keyways loaded...</option>
                         </select>
-                    </p>
-                    <p>
+                    </div>
                     <div id="bitting-instructions"></div>
                     <button id="show-advanced" class="info-button hide" popovertarget="advanced-bitting-dialog"><i class="fa-regular fa-circle-question"></i>Advanced</button>
-                    </p>
-                    <p>
-                        <label for="bitting">Bitting:</label><br />
-                        <input id="bitting" type="text" disabled />
-                    </p>
+                    <div class="field">
+                        <label for="bitting">Bitting</label>
+                        <input id="bitting" type="text" placeholder="Leave empty to generate blank key" disabled />
+                    </div>
                 </div>
                 <div id="follower-tab" class="tab hide">
-                    <p>
-                        <label for="follower-select">Follower</label><br />
+                    <div class="field">
+                        <label for="follower-select">Follower preset</label>
                         <select id="follower-select" disabled>
                             <option>No followers loaded...</option>
                         </select>
-                    </p>
-                    <p>
-                        <label for="follower-length">Total Length:</label><br />
+                    </div>
+                    <div class="field">
+                        <label for="follower-length">Total length</label>
                         <span id="follower-length"></span>
-                    </p>
-                    <p>
-                        <label for="follower-diameter">Diameter:</label><br />
+                    </div>
+                    <div class="field">
+                        <label for="follower-diameter">Diameter</label>
                         <span id="follower-diameter"></span>
-                    </p>
-                    <p>
-                        <label for="follower-top-select">Top End</label><br />
+                    </div>
+                    <div class="field">
+                        <label for="follower-top-select">Top end</label>
                         <select id="follower-top-select" disabled>
                             <option>No ends loaded...</option>
                         </select>
-                    </p>
+                    </div>
                     <div id="follower-top-div" class="follower-end"></div>
-                    <p>
-                        <label for="follower-bottom-select">Bottom End</label><br />
+                    <div class="field">
+                        <label for="follower-bottom-select">Bottom end</label>
                         <select id="follower-bottom-select" disabled>
                             <option>No ends loaded...</option>
                         </select>
-                    </p>
+                    </div>
                     <div id="follower-bottom-div" class="follower-end"></div>
                 </div>
                 <hr>
-                <div id="info"></div>
-                <p>
-                    <button id="generate" class="blue-button" disabled>Generate</button>
-                </p>
+                <div id="info" role="status" aria-live="polite"></div>
+                <div class="generate-row">
+                    <button id="generate" class="primary-button" disabled><i class="fa-solid fa-cube"></i> Generate model</button>
+                </div>
             </div>
             <div class="view-pane">
                 <div id="model-view">
                     <canvas id="canvas"></canvas>
                     <span id="model-description"></span>
-                    <span id="model-generating"></span>
+                    <span id="model-overlay-text" role="status" aria-live="polite"></span>
                 </div>
-                <p>
-                    <button id="save-stl" class="red-button" title="Download STL" disabled><i class="fa-solid fa-download"></i> STL</button>
-                    <button id="save-step" class="red-button" title="Download STEP" disabled><i class="fa-solid fa-download"></i> STEP</button>
-                </p>
-                <div>
-                    <span style="height: 15px; font-size: 10px; color:#555">Left click to orbit, right click to pan,
-                        scrollwheel to zoom</span>
+                <div class="viewport-footer">
+                    <span class="viewport-help"><i class="fa-solid fa-computer-mouse"></i> Left drag to orbit · right drag to pan · scroll to zoom</span>
+                    <div class="export-actions">
+                        <button id="save-stl" class="secondary-button" title="Download STL" disabled><i class="fa-solid fa-download"></i> STL</button>
+                        <button id="save-step" class="secondary-button" title="Download STEP" disabled><i class="fa-solid fa-download"></i> STEP</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    </div>
     <dialog id="about-dialog" popover>
-        <div style="float: right;"><button class="info-button" popovertarget="about-dialog" popovertargetaction="hide" title="Close"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="dialog-toolbar"><button class="info-button" popovertarget="about-dialog" popovertargetaction="hide" title="Close"><i class="fa-solid fa-xmark"></i></button></div>
         <div id="about-info" class="scrollable-dialog">
             <h2>About realkey</h2>
             <p>realkey is a system for generating 3D models of keys that can be used for 3D printing keys. It runs
-                entirely on your local browser!</a></p>
+                entirely in your local browser!</p>
             <p>realkey is powered at its core by <a href="https://build123d.readthedocs.io/en/latest/" target="_blank">build123d</a>, a code-based CAD system written in Python.</p>
             <p>Many of the target locks have very high tolerances, to improve print quality, some recommended settings
-                are available:
+                are available:</p>
             <details id="settings-detail">
                 <summary><b>3D Printing Settings</b></summary>
                 Good plastics for keys are rigid and wear resistant. If it's good for gears, it's good for keys!
-                <p>Plastics:
+                <h3>Plastics</h3>
                 <ul>
                     <li>Carbon Fiber Nylon</li>
                     <li>Polycarbonate</li>
                     <li>PETG</li>
                     <li>PLA - Even PLA works well! It can be a little brittle however.</li>
                 </ul>
-                </p>
-                <p>Settings:
+                <h3>Settings</h3>
                 <ul>
                     <li>Nozzle: 0.4mm</li>
                     <li>Start with your printers HIGHEST DETAIL default, then adjust</li>
@@ -183,9 +187,7 @@
                     <li>Top Z Distance: 0.16mm-0.20mm</li>
                     <li>Bottom Z Distance: 0.20mm</li>
                 </ul>
-                </p>
             </details>
-            </p>
             <p>For more information, checkout the github page!</p>
             <h2><a href="https://github.com/smgoldade/realkey" title="realkey GitHub" target="_blank"><i class="fa-brands fa-github"></i></a></h2>
         </div>
@@ -197,11 +199,12 @@
     <dialog id="share-dialog" popover>
         <div style="float: right;"><button class="info-button" popovertarget="share-dialog" popovertargetaction="hide" title="Close"><i class="fa-solid fa-xmark"></i></button></div>
         <p id="share-setup" class="scrollable-dialog">
-            <input type="checkbox" id="share-settings" checked><label for="share-values">Share settings?</label><br>
-            <input type="checkbox" id="share-generate" checked><label for="share-values">Auto generate?</label><br>
+            <input type="checkbox" id="share-settings" checked><label for="share-settings">Share settings?</label><br>
+            <input type="checkbox" id="share-generate" checked><label for="share-generate">Auto generate?</label><br>
         </p>        
-        <button id="copy-link" title="Copy link" class="blue-button" popovertarget="share-dialog" popovertargetaction="hide"><i class="fa-solid fa-link"></i> Copy Link</button>
+        <button id="copy-link" title="Copy link" class="primary-button"><i class="fa-solid fa-link"></i> Copy Link</button>
     </dialog>
+    <div id="toast" popover="manual" role="status" aria-live="polite" aria-atomic="true"></div>
 </body>
 
 </html>

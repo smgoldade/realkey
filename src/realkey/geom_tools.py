@@ -1,7 +1,7 @@
 from build123d import *
 
 
-def min(shapes: ShapeList) -> Vector:
+def minimum_bound(shapes: ShapeList) -> Vector:
     mx, my, mz = None, None, None
     for shape in shapes:
         m = shape.bounding_box().min
@@ -29,14 +29,14 @@ def center(shapes: ShapeList) -> Vector:
     return Vector(cx, cy, cz)
 
 
-def max(shapes: ShapeList) -> Vector:
+def maximum_bound(shapes: ShapeList) -> Vector:
     mx, my, mz = None, None, None
     for shape in shapes:
         m = shape.bounding_box().max
         if mx is None or m.X > mx:
             mx = m.X
         if my is None or m.Y > my:
-            my = m.Y1
+            my = m.Y
         if mz is None or m.Z > mz:
             mz = m.Z
     if mx is None or my is None or mz is None:
@@ -55,13 +55,8 @@ def Tube(inner_radius: float, outer_radius: float, length: float) -> Part:
     return tube.part
 
 def generate_lifting_cut(face: Face, direction: VectorLike, lift_direction:VectorLike, length: float, lift_amount: float) -> Part:
-
-
     total_displacement = Vector(direction).normalized() * length
     total_lift = Vector(lift_direction).normalized() * lift_amount
-
-    #face.position = source
-    #face.orientation = Vector(direction).normalized()
 
     with BuildPart() as lifting_cut:
         with BuildLine() as cut_line:

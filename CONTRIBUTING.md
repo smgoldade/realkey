@@ -32,7 +32,7 @@ Make sure the python package is imported in both [tab_key.py](https://github.com
 ### Config!
 Make sure your python files are in [config.json](https://github.com/smgoldade/realkey/blob/main/config.json).
 
-Use lazy resource fetching utilizing [resource_fethcer.py](https://github.com/smgoldade/realkey/blob/main/src/realkey/resource_fetcher.py)
+Use lazy resource fetching utilizing [resource_fetcher.py](https://github.com/smgoldade/realkey/blob/main/src/realkey/resource_fetcher.py)
 
 ### Development Tips
 Use vscode with ocp_vscode to help develop new keys! You will see a main execution at the bottom of most key python files that uses ocp_vscode, which allows you to quickly run a key file and view the generated output from within vscode without having to spin-up the whole web setup, allowing for quicker prototyping and development.

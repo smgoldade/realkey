@@ -21,4 +21,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["ocp_vscode == 3.4.0"]
+dev = ["ocp_vscode == 4.0.0"]
+
+[tool.setuptools.package-data]
+realkey = ["resources/*.*", "resources/*/*.*"]

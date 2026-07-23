@@ -37,8 +37,9 @@ class Desmo(key.Key):
     def basic_bitting_definition(cls) -> str:
         return (
             "<b>Cuts:</b> Up to 10, defined from bow to tip, right side before left.<br>"
+            "<i>Separate each sides cuts with a space.</i><br>"
             "<b>Depths:</b> Maximum lift 1 to minimum lift 6<br>"
-            "<b>Example:</b> <i>145362 represents 145 on the right, 362 on the left</i>"
+            "<b>Example:</b> <i>145 362 represents 145 on the right, 362 on the left</i>"
         )
 
     @classmethod
@@ -46,26 +47,46 @@ class Desmo(key.Key):
         return None
 
     @classmethod
-    def validate_bitting(cls, profile: str, keyway: str, bitting: str):
-        if profile == "6pin" and len(bitting) > 6:
-            raise ValueError("6 pin profile only supports a maximum of 6 cuts")
-        if profile == "8pin" and len(bitting) > 8:
-            raise ValueError("8 pin profile only supports a maximum of 8 cuts")
-        if profile == "10pin" and len(bitting) > 10:
-            raise ValueError("10 pin profile only supports a maximum of 10 cuts")
-        if len(bitting) % 2 != 0:
-            raise ValueError("Number of cuts must be even")
-        if not bitting.isnumeric():
+    def validate_bitting(cls, profile: str, keyway: str, bitting: str) -> None:
+        if not bitting:
+            return
+        if len(bitting.split()) == 1:
+            raise ValueError("No left track cuts specified")
+        if len(bitting.split()) != 2:
+            raise ValueError("Invalid amount of spaces in bitting input")
+
+        r_bitting, l_bitting = bitting.split()
+        if profile == "6pin":
+            if len(r_bitting) > 3:
+                raise ValueError("6 pin profile only supports a maximum of 3 cuts on the right side")
+            if len(l_bitting) > 3:
+                raise ValueError("6 pin profile only supports a maximum of 3 cuts on the left side")
+        if profile == "8pin":
+            if len(r_bitting) > 4:
+                raise ValueError("8 pin profile only supports a maximum of 4 cuts on the right side")
+            if len(l_bitting) > 4:
+                raise ValueError("8 pin profile only supports a maximum of 4 cuts on the left side")
+        if profile == "10pin":
+            if len(r_bitting) > 5:
+                raise ValueError("10 pin profile only supports a maximum of 5 cuts on the right side")
+            if len(l_bitting) > 5:
+                raise ValueError("10 pin profile only supports a maximum of 5 cuts on the left side")
+
+        if not r_bitting.isnumeric() or not l_bitting.isnumeric():
             raise ValueError("Only numeric cuts are allowed")
-        for cut in bitting:
+        for cut in r_bitting:
             if int(cut) < 1 or int(cut) > 6:
-                raise ValueError("Cut depths must be from 1 to 6")
+                raise ValueError("Right cut depths must be from 1 to 6")
+        for cut in l_bitting:
+            if int(cut) < 1 or int(cut) > 6:
+                raise ValueError("Left cut depths must be from 1 to 6")
 
     @classmethod
     def blank(cls, profile: str, keyway: str) -> Part:
-        if not resource_fetcher.pre_fetch_resource("resources/ASSA/Desmo.svg"):
+        resource_path = resource_fetcher.fetch_resource("resources/ASSA/Desmo.svg")
+        if resource_path is None:
             raise ValueError("Unable to load ASSA Desmo SVG")
-        assa_svg = import_svg("resources/ASSA/Desmo.svg", flip_y=False, label_by="inkscape:label")
+        assa_svg = import_svg(resource_path, flip_y=False, label_by="inkscape:label")
         profile_face = svgtools.get_starting_at_origin(assa_svg, "#profile_desmo_" + profile)
         keyway_face = svgtools.get_centered_around_origin(assa_svg, "#keyway_" + keyway)
         keyway_face = keyway_face.rotate(Axis.Z, -90)
@@ -87,12 +108,13 @@ class Desmo(key.Key):
         cls.validate_bitting(profile, keyway, bitting)
 
         desmo_blank = cls.blank(profile, keyway)
+        if not bitting:
+            return desmo_blank
 
         right_track = [(0.0, 0.0)] * 18
         left_track = [(0.0, 0.0)] * 18
 
-        right_cuts = bitting[: int(len(bitting) / 2)]
-        left_cuts = bitting[int(len(bitting) / 2) :]
+        right_cuts, left_cuts = bitting.split()
 
         def calculate_tracks(track: list[tuple[float, float]], cuts: str):
             for i, cut in enumerate(cuts):

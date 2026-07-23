@@ -1,5 +1,3 @@
-from typing import Iterable
-
 from pyscript import web, when
 
 
@@ -49,11 +47,17 @@ class Element:
     def active(self, value: bool):
         self._set_class_bool("active", value)
 
+    def matches(self, value: str) -> bool:
+        return self._web_element.matches(value) # type: ignore
+
+    def show_popover(self):
+        self._web_element.showPopover() # type: ignore
+
+    def hide_popover(self):
+        self._web_element.hidePopover()  # type: ignore
+
 
 class StringValueElement(Element):
-    def __init__(self, web_element: web.ElementCollection) -> None:
-        super().__init__(web_element)
-
     @property
     def value(self) -> str:
         return str(self._web_element.value)
@@ -68,9 +72,6 @@ class StringValueElement(Element):
 
 
 class FloatValueElement(Element):
-    def __init__(self, web_element: web.ElementCollection) -> None:
-        super().__init__(web_element)
-
     @property
     def value(self) -> float:
         return float(str(self._web_element.value))
@@ -85,9 +86,6 @@ class FloatValueElement(Element):
 
 
 class OptionElement(StringValueElement):
-    def __init__(self, web_element: web.ElementCollection) -> None:
-        super().__init__(web_element)
-
     @property
     def selected(self) -> bool:
         if hasattr(self._web_element, "selected"):
@@ -106,9 +104,6 @@ class OptionElement(StringValueElement):
 
 
 class OptionElementList(list[OptionElement]):
-    def __init__(self, iterable: Iterable[OptionElement]) -> None:
-        super().__init__(iterable)
-
     @property
     def selected(self):
         for option in self:
@@ -122,9 +117,6 @@ class OptionElementList(list[OptionElement]):
 
 
 class SelectElement(Element):
-    def __init__(self, web_element: web.ElementCollection) -> None:
-        super().__init__(web_element)
-
     def populate(self, null_string: str, options_dict: dict[str, dict[str, str]]):
         self._web_element.replaceChildren()  # type: ignore
         if len(null_string) > 0:
@@ -201,6 +193,9 @@ class LengthInputElement(FloatValueElement):
             self.value = self.value / 25.4
         self.validate()
 
+    def is_valid(self) -> bool:
+        return self._input.validity.valid # type: ignore
+
     def validate(self):
         self._input.setCustomValidity("")  # type: ignore
         self._input.reportValidity()  # type: ignore
@@ -233,9 +228,6 @@ class LengthInputElement(FloatValueElement):
 
 
 class CheckboxElement(Element):
-    def __init__(self, web_element: web.ElementCollection) -> None:
-        super().__init__(web_element)
-
     @property
     def checked(self) -> bool:
         if hasattr(self._web_element, "checked"):

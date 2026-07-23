@@ -1,5 +1,5 @@
 from pyscript import web, when
-from pyscript.ffi import to_js
+
 from realkey import follower, tab, web_core, web_main
 
 follower_select = web_core.SelectElement(web.page["follower-select"])
@@ -14,9 +14,66 @@ top_elements: dict[str, web_core.FloatValueElement] = {}
 bottom_elements: dict[str, web_core.FloatValueElement] = {}
 
 
+def generate_config() -> tuple[dict[str, float], dict[str, float]]:
+    top_config: dict[str, float] = {}
+    for tag, element in top_elements.items():
+        top_config[tag] = element.stripped_value
+
+    bottom_config: dict[str, float] = {}
+    for tag, element in bottom_elements.items():
+        bottom_config[tag] = element.stripped_value
+    return top_config, bottom_config
+
+
 def run_validation():
-    web_main.info.html = ""
-    web_main.generate.enabled = True
+    try:
+        top_config, bottom_config = generate_config()
+
+        top_follower: type[follower.FollowerEnd] = follower.FollowerEnd._list[follower_top_select.selected_value]
+        bottom_follower: type[follower.FollowerEnd] = follower.FollowerEnd._list[follower_bottom_select.selected_value]
+
+        for element in top_elements.values():
+            if isinstance(element, web_core.LengthInputElement):
+                if not element.is_valid():
+                    web_main.set_generation_valid(False)
+                    return
+        for element in bottom_elements.values():
+            if isinstance(element, web_core.LengthInputElement):
+                if not element.is_valid():
+                    web_main.set_generation_valid(False)
+                    return
+
+        if not follower_length.is_valid():
+            web_main.set_generation_valid(False)
+            return
+        total_length = follower_length.stripped_value
+        if total_length <= 0:
+            web_main.set_info("Total follower length must be positive.", True)
+            web_main.set_generation_valid(False)
+            return
+
+        if not follower_diameter.is_valid():
+            web_main.set_generation_valid(False)
+            return
+        diameter = follower_diameter.stripped_value
+        if diameter <= 0:
+            web_main.set_info("Total follower diameter must be positive.", True)
+            web_main.set_generation_valid(False)
+            return
+
+        top_length = top_follower.generated_length(top_config)
+        bottom_length = bottom_follower.generated_length(bottom_config)
+        remaining_length = total_length - top_length - bottom_length
+
+        if remaining_length <= 0:
+            web_main.set_info("Follower ends take up more length than total length.", True)
+            web_main.set_generation_valid(False)
+        else:
+            web_main.set_info("")
+            web_main.set_generation_valid(True)
+    except Exception as e:
+        web_main.set_info(f"{e}", True)
+        web_main.set_generation_valid(False)
 
 
 def load_follower():
@@ -37,7 +94,7 @@ def load_follower():
 def load_follower_end(is_top: bool, tag: str, config: None | dict[str, float]):
     div_element = follower_top_div if is_top else follower_bottom_div
     elements = top_elements if is_top else bottom_elements
-    follower_end: follower.FollowerEnd = follower.FollowerEnd._list[tag]
+    follower_end: type[follower.FollowerEnd] = follower.FollowerEnd._list[tag]
     follower_config = follower_end.config()
 
     div_element._web_element.replaceChildren()  # type: ignore
@@ -46,27 +103,36 @@ def load_follower_end(is_top: bool, tag: str, config: None | dict[str, float]):
         return
 
     def create_element(is_top: bool, tag: str, label: str):
-        id = tag + "-ig-" + ("top" if is_top else "bottom")
+        element_id = tag + "-ig-" + ("top" if is_top else "bottom")
         p = web.p()
-        l = web.label(htmlFor=id, innerHTML=label)
-        s = web.span(id=id)
+        l = web.label(htmlFor=element_id, innerHTML=label)
+        s = web.span(id=element_id)
         p.append(l, web.br(), s)
-        return p
+        return p, element_id
 
-    id = "rotation-ig-" + ("top" if is_top else "bottom")
+    element_id = "rotation-ig-" + ("top" if is_top else "bottom")
     p = web.p()
-    l = web.label(htmlFor=id, innerHTML="Rotation")
-    s = web.input_(id=id, type="text", value="0")
-    p.append(l, web.br(), s, web.span(" deg"))
+    l = web.label(htmlFor=element_id, innerHTML="Rotation")
+    rotation_input = web.input_(
+        id=element_id,
+        type="text",
+        value="0",
+        pattern="^\\d*(\\.\\d{0,3})?$",
+        classes=["length-input-text"],
+    )
+    rotation_group = web.span(classes=["length-input", "rotation-input"])
+    rotation_group.append(rotation_input, web.span("deg", classes=["rotation-input-unit"]))
+    p.append(l, web.br(), rotation_group)
     div_element._web_element.append(p)  # type: ignore
-    elements["rotation"] = web_core.FloatValueElement(web.page[id])
+    elements["rotation"] = web_core.FloatValueElement(web.page[element_id])
+    when("input", rotation_input)(end_value_change)
 
     for tag, label in follower_config.items():
-        div_element._web_element.append(create_element(is_top, tag, label))  # type: ignore
-        id = tag + "-ig-" + ("top" if is_top else "bottom")
-        input = web_core.LengthInputElement(web.page[id])
+        element, element_id = create_element(is_top, tag, label)
+        div_element._web_element.append(element)  # type: ignore
+        input = web_core.LengthInputElement(web.page[element_id])
         elements[tag] = input
-        when("change", input._get_input())(end_value_change)
+        when("input", input._get_input())(end_value_change)
         if config and tag in config:
             input.value = config[tag]
 
@@ -109,8 +175,22 @@ def end_value_change():
 
 
 def get_pretty_name() -> str:
+    def format_end(name: str, elements: dict[str, web_core.FloatValueElement]) -> str:
+        values = []
+        for tag, element in elements.items():
+            unit = "deg" if tag == "rotation" else "mm"
+            values.append(f"{element.stripped_value}{unit}")
+        if not values:
+            return name
+        return f"{name} ({', '.join(values)})"
+
     if follower_select.selected_value == "Custom":
-        return f"Custom Follower - {follower_length.stripped_value}mm x {follower_diameter.stripped_value}mm - {follower_top_select.selected_html} ({",".join([f"{v.stripped_value}mm" for v in top_elements.values()])}) - {follower_bottom_select.selected_html} ({",".join([f"{v.stripped_value}mm" for v in bottom_elements.values()])})"
+        return (
+            f"Custom Follower - {follower_length.stripped_value}mm x "
+            f"{follower_diameter.stripped_value}mm - "
+            f"{format_end(follower_top_select.selected_html, top_elements)} - "
+            f"{format_end(follower_bottom_select.selected_html, bottom_elements)}"
+        )
     else:
         return f"{follower_select.selected_value} Follower"
 
@@ -128,6 +208,9 @@ class FollowerTab(tab.Tab):
         follower_bottom_select.populate("", {"": {k: v.display_name() for k, v in follower.FollowerEnd._list.items()}})
         follower_bottom_select.enabled = True
 
+        follower_length.value = 70
+        follower_diameter.value = 12
+
     def show(self):
         super().show()
         run_validation()
@@ -136,7 +219,7 @@ class FollowerTab(tab.Tab):
         return_values: dict[str, str] = {}
 
         return_values["follower"] = follower_select.selected_value
-        if "Custom" != return_values["follower"]:
+        if return_values["follower"] != "Custom":
             return return_values
 
         return_values["follower_length"] = str(follower_length.stripped_value)
@@ -157,7 +240,7 @@ class FollowerTab(tab.Tab):
 
         self._populate_param(query_params, "follower", set_follower)
 
-        if "Custom" != follower_select.selected_value:
+        if follower_select.selected_value != "Custom":
             return
 
         def set_follower_length(length: str):
@@ -197,30 +280,28 @@ class FollowerTab(tab.Tab):
                 self._populate_param(query_params, tag + "-ig-bottom", set_element_value)
 
         self._populate_param(query_params, "follower_bottom", set_follower_bottom)
+        run_validation()
 
-    async def generate(self, bg_worker) -> dict[str, str]:
-        top_config: dict[str, float] = {}
-        for tag, element in top_elements.items():
-            top_config[tag] = element.stripped_value
+    async def generate(self, bg_worker) -> tab.GenerationResult:
+        top_config, bottom_config = generate_config()
 
-        bottom_config: dict[str, float] = {}
-        for tag, element in bottom_elements.items():
-            bottom_config[tag] = element.stripped_value
-
-        gen_follower = (
-            await bg_worker.generate_follower(
-                follower_length.stripped_value,
-                follower_diameter.stripped_value,
-                follower_top_select.selected_value,
-                top_config,
-                follower_bottom_select.selected_value,
-                bottom_config,
-            )
-        ).to_py()  # type: ignore
+        gen_follower: tab.GenerationResult = {}
+        gen_follower["description"] = get_pretty_name()
+        gen_follower.update(
+            (
+                await bg_worker.generate_follower(
+                    follower_length.stripped_value,
+                    follower_diameter.stripped_value,
+                    follower_top_select.selected_value,
+                    top_config,
+                    follower_bottom_select.selected_value,
+                    bottom_config,
+                )
+            ).to_py()
+        )
         if "error" in gen_follower:
             return gen_follower
 
-        gen_follower["description"] = get_pretty_name()
         gen_follower["roughness"] = 0.25
         gen_follower["metalness"] = 0.95
         gen_follower["color"] = 0xC0C0C0

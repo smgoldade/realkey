@@ -172,13 +172,13 @@ class SGSDB(key.Key):
         )
 
     @classmethod
-    def validate_bitting(cls, profile: str, keyway: str, bitting: str):
+    def validate_bitting(cls, profile: str, keyway: str, bitting: str) -> None:
         if profile in ["87h", "9609", "sy3b"] and len(bitting) > 5:
-            raise ValueError(f"S&G {cls.profiles()[profile]} has a maximum of 5 cuts")
+            raise ValueError(f"S&G {cls.profile_name(profile)} has a maximum of 5 cuts")
         if profile in ["60", "96"] and len(bitting) > 6:
-            raise ValueError(f"S&G {cls.profiles()[profile]} has a maximum of 6 cuts")
+            raise ValueError(f"S&G {cls.profile_name(profile)} has a maximum of 6 cuts")
         if profile in ["87h_7cut", "96_7cut"] and len(bitting) > 7:
-            raise ValueError(f"S&G {cls.profiles()[profile]} has a maximum of 7 cuts")
+            raise ValueError(f"S&G {cls.profile_name(profile)} has a maximum of 7 cuts")
 
         if not bitting.isnumeric():
             raise ValueError("Only numeric cuts are allowed")
@@ -192,17 +192,18 @@ class SGSDB(key.Key):
         blank = None
         if profile in cls.SG_PROFILE_LOAD_DICT:
             res = cls.SG_PROFILE_LOAD_DICT[profile]
-            if not resource_fetcher.pre_fetch_resource(res):
+            resource_path = resource_fetcher.fetch_resource(res)
+            if resource_path is None:
                 raise ValueError("Unable to load S&G blank")
             with BuildPart() as step_blank:
-                add(import_step(res))
+                add(import_step(resource_path))
             blank = step_blank.part
         if blank is None:
             raise ValueError("Issue loading blank")
         return blank
 
     @classmethod
-    def key(cls, profile: str, keyway: str, bitting: str) -> key_cutters.Part:
+    def key(cls, profile: str, keyway: str, bitting: str) -> Part:
         cls.validate_bitting(profile, keyway, bitting)
 
         sg_blank = cls.blank(profile, keyway)

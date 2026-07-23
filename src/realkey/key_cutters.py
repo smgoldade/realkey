@@ -1,5 +1,6 @@
-from build123d import *
 import math
+
+from build123d import *
 
 
 def angled_cutter(cuts: list[tuple[float, float]], cut_root_width: float, neutral_y: float, max_cutter_width: float, angle: float) -> Sketch:
@@ -23,7 +24,7 @@ def angled_cutter(cuts: list[tuple[float, float]], cut_root_width: float, neutra
             if dx * 2 + cut_root_width > max_cutter_width:
                 # cap dx, requiring extra points
                 dx = (max_cutter_width - cut_root_width) / 2
-                dy = abs(dx / cs)
+                dy = abs(dx * cs)
 
                 with BuildLine():
                     Polyline(
@@ -60,6 +61,8 @@ def smooth_angled_cutter(cuts: list[tuple[float, float]], cut_root_width: float,
         neutral_y (float): The default neutral position for ramp in and ramp out, typically the Y value of the top of the key with a little cushion to close the shape.
         angle (float): The desired angle of all cuts, defined as the total angle of the cut, between two ramps
     """
+    if angle == 0:
+        raise ValueError("0 angle cuts are undefined")
     if len(cuts) < 2:
         return angled_cutter(cuts, cut_root_width, neutral_y, cut_root_width*10, angle)
 

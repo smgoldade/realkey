@@ -1,14 +1,13 @@
+import sys
+
+from js import URL
+import micropip  # type: ignore
 from pyscript import display, window, workers
-import sys, micropip # type: ignore
 
 # Kick off key generating worker
-display("Loading key generation system...", target="status", append=False)
-print("[FG] Waiting for background install")
-keygen = await workers["keygen"]
-await keygen.set_base_url(window.location.origin + window.location.pathname)
-print("[FG] Background worker loaded")
+display("Loading interface...", target="status", append=False)
+keygen_loading = workers["keygen"]
 await micropip.install(["typing-extensions"])
-display("Loaded!", target="status", append=False)
 
 
 # Mock build123d
@@ -36,4 +35,16 @@ bogus123d.Wire = Empty
 # Jump into realkey
 from realkey import web_main
 
-await web_main.main(keygen)
+await web_main.main()
+
+print("[FG] Waiting for background install")
+try:
+    keygen = await keygen_loading
+    base_url = URL.new(".", window.location.href).href.rstrip("/")
+    await keygen.set_base_url(base_url)
+except Exception as error:
+    print(f"[FG] Background worker failed to load: {error}")
+    web_main.background_worker_failed()
+else:
+    print("[FG] Background worker loaded")
+    await web_main.background_worker_loaded(keygen)

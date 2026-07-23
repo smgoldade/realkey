@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 from math import atan2, degrees
-from typing import NamedTuple
+from typing import ClassVar, NamedTuple
 
 from build123d import *
-from build123d import Part
 
 from realkey import geom_tools
 
@@ -20,51 +19,84 @@ class FollowerConfigData(NamedTuple):
 FOLLOWER_DEFINITIONS: dict[str, FollowerConfigData | None] = {
     "Custom": None,
     "iNAHO Tierkey Short": FollowerConfigData(
-        50 * MM,
+        70 * MM,
         9.45 * MM,
         "tongue",
-        {"tongue_depth": 4.5 * MM, "tongue_width": 3.1 * MM},
+        {"rotation": 0, "tongue_depth": 4.5 * MM, "tongue_width": 3.1 * MM},
         "pin_slot",
-        {"pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
+        {"rotation": 0, "pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
     ),
     "Kaba Ace": FollowerConfigData(
-        50 * MM,
+        70 * MM,
         9.95 * MM,
         "cross",
-        {"cross_depth": 5.25 * MM, "cross_x_width": 2.25 * MM, "cross_y_width": 2.25 * MM},
+        {"rotation": 0, "cross_depth": 5.25 * MM, "cross_x_width": 2.25 * MM, "cross_y_width": 2.25 * MM},
         "pin_slot",
-        {"pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
+        {"rotation": 0, "pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
     ),
     "Keso 2000S": FollowerConfigData(
-        50 * MM,
+        70 * MM,
         10.95 * MM,
         "tongue",
-        {"tongue_depth": 4.75 * MM, "tongue_width": 3.25 * MM},
+        {"rotation": 0, "tongue_depth": 4.75 * MM, "tongue_width": 3.25 * MM},
         "pin_slot",
-        {"pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
+        {"rotation": 0, "pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
     ),
-    "Schlage": FollowerConfigData(70 * MM, 0.495 * IN, "schlage", {}, "slot", {"slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}),
+    "Schlage": FollowerConfigData(70 * MM, 0.495 * IN, "schlage", {}, "slot", {"rotation": 0, "slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}),
     "West 917": FollowerConfigData(
-        60 * MM,
+        70 * MM,
         11.95 * MM,
         "tongue",
-        {"tongue_depth": 2.90 * MM, "tongue_width": 1.95 * MM},
+        {"rotation": 0, "tongue_depth": 2.90 * MM, "tongue_width": 1.95 * MM},
         "pin_slot",
-        {"pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
+        {"rotation": 0, "pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
     ),
-    "Generic 10mm": FollowerConfigData(70 * MM, 10 * MM, "slot", {"slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}, "flat_end", {}),
-    "Generic 12.5mm": FollowerConfigData(70 * MM, 12.5 * MM, "slot", {"slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}, "flat_end", {}),
-    "Generic 12.7mm": FollowerConfigData(70 * MM, 12.7 * MM, "slot", {"slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}, "flat_end", {}),
-    "Generic 12.8mm": FollowerConfigData(70 * MM, 12.8 * MM, "slot", {"slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}, "flat_end", {}),
-    "Generic 14mm": FollowerConfigData(70 * MM, 14 * MM, "slot", {"slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}, "flat_end", {}),
+    "Generic 10mm": FollowerConfigData(70 * MM, 10 * MM, "slot", {"rotation": 0, "slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}, "flat_end", {}),
+    "Generic 12.5mm": FollowerConfigData(70 * MM, 12.5 * MM, "slot", {"rotation": 0, "slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}, "flat_end", {}),
+    "Generic 12.7mm": FollowerConfigData(70 * MM, 12.7 * MM, "slot", {"rotation": 0, "slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}, "flat_end", {}),
+    "Generic 12.8mm": FollowerConfigData(70 * MM, 12.8 * MM, "slot", {"rotation": 0, "slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}, "flat_end", {}),
+    "Generic 14mm": FollowerConfigData(70 * MM, 14 * MM, "slot", {"rotation": 0, "slot_depth": 5.25 * MM, "slot_width": 5.5 * MM}, "flat_end", {}),
+    "High Pin Count 10mm": FollowerConfigData(
+        70 * MM,
+        9.95 * MM,
+        "flat_end",
+        {},
+        "pin_slot",
+        {"rotation": 0, "pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
+    ),
+    "High Pin Count 11mm": FollowerConfigData(
+        70 * MM,
+        10.95 * MM,
+        "flat_end",
+        {},
+        "pin_slot",
+        {"rotation": 0, "pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
+    ),
+    "High Pin Count 12mm": FollowerConfigData(
+        70 * MM,
+        11.95 * MM,
+        "flat_end",
+        {},
+        "pin_slot",
+        {"rotation": 0, "pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
+    ),
+    "High Pin Count 12.8mm": FollowerConfigData(
+        70 * MM,
+        12.8 * MM,
+        "flat_end",
+        {},
+        "pin_slot",
+        {"rotation": 0, "pin_slot_depth": 5 * MM, "pin_slot_width": 3 * MM},
+    ),
 }
 
 
 class FollowerEnd(ABC):
-    _list: dict = {}
+    _list: ClassVar[dict[str, type["FollowerEnd"]]] = {}
 
     def __init_subclass__(cls, **kwargs):
         """Used to have a list of all current follower ends available for generation"""
+        super().__init_subclass__(**kwargs)
         FollowerEnd._list[cls.tag()] = cls
 
     @classmethod
@@ -88,13 +120,25 @@ class FollowerEnd(ABC):
 
     @classmethod
     @abstractmethod
+    def generated_length(cls, config_data: dict[str, float]) -> float:
+        """Returns the length of this follower end given the provided config data
+
+        Args:
+            config_data (dict[str, float]): a dict containing config tag str to float values for the follower end
+
+        Returns:
+            float: the total length of the generated follower end
+        """
+
+    @classmethod
+    @abstractmethod
     def generate(cls, follower_length: float, follower_diameter: float, config_data: dict[str, float]) -> tuple[Part | None, float]:
         """Generates the follower end
 
         Args:
             follower_length (float): the length of the follower being generated if needed
             follower_diameter (float): the diameter of the follower being generated if needed
-            config_data (dict[str, float]): a dict containing config tag str to float values for the config
+            config_data (dict[str, float]): a dict containing config tag str to float values for the follower end
 
         Returns:
             tuple[Part, float]: A tuple containing the generated part and a float representing its total length
@@ -113,6 +157,10 @@ class FlatEndFollowerEnd(FollowerEnd):
     @classmethod
     def config(cls) -> dict[str, str]:
         return {}
+
+    @classmethod
+    def generated_length(cls, config_data: dict[str, float]) -> float:
+        return 0
 
     @classmethod
     def generate(cls, follower_length: float, follower_diameter: float, config_data: dict[str, float]) -> tuple[Part | None, float]:
@@ -134,6 +182,10 @@ class SlotFollowerEnd(FollowerEnd):
             "slot_depth": "Depth",
             "slot_width": "Width",
         }
+
+    @classmethod
+    def generated_length(cls, config_data: dict[str, float]) -> float:
+        return config_data["slot_depth"]
 
     @classmethod
     def generate(cls, follower_length: float, follower_diameter: float, config_data: dict[str, float]) -> tuple[Part | None, float]:
@@ -165,6 +217,10 @@ class VSlotFollowerEnd(FollowerEnd):
             "v_slot_depth": "Depth",
             "v_slot_width": "Width",
         }
+
+    @classmethod
+    def generated_length(cls, config_data: dict[str, float]) -> float:
+        return config_data["v_slot_depth"]
 
     @classmethod
     def generate(cls, follower_length: float, follower_diameter: float, config_data: dict[str, float]) -> tuple[Part | None, float]:
@@ -205,6 +261,10 @@ class TongueFollowerEnd(FollowerEnd):
         }
 
     @classmethod
+    def generated_length(cls, config_data: dict[str, float]) -> float:
+        return config_data["tongue_depth"]
+
+    @classmethod
     def generate(cls, follower_length: float, follower_diameter: float, config_data: dict[str, float]) -> tuple[Part | None, float]:
         radius = follower_diameter / 2
         depth = config_data["tongue_depth"]
@@ -232,6 +292,10 @@ class CrossFollowerEnd(FollowerEnd):
             "cross_x_width": "X Width",
             "cross_y_width": "Y Width",
         }
+
+    @classmethod
+    def generated_length(cls, config_data: dict[str, float]) -> float:
+        return config_data["cross_depth"]
 
     @classmethod
     def generate(cls, follower_length: float, follower_diameter: float, config_data: dict[str, float]) -> tuple[Part | None, float]:
@@ -262,6 +326,10 @@ class PinSlotFollowerEnd(FollowerEnd):
             "pin_slot_depth": "Depth",
             "pin_slot_width": "Width",
         }
+
+    @classmethod
+    def generated_length(cls, config_data: dict[str, float]) -> float:
+        return config_data["pin_slot_depth"]
 
     @classmethod
     def generate(cls, follower_length: float, follower_diameter: float, config_data: dict[str, float]) -> tuple[Part | None, float]:
@@ -298,6 +366,10 @@ class HollowFollowerEnd(FollowerEnd):
         }
 
     @classmethod
+    def generated_length(cls, config_data: dict[str, float]) -> float:
+        return config_data["hollow_depth"]
+
+    @classmethod
     def generate(cls, follower_length: float, follower_diameter: float, config_data: dict[str, float]) -> tuple[Part | None, float]:
         radius = follower_diameter / 2
         depth = config_data["hollow_depth"]
@@ -324,6 +396,10 @@ class SlottedHollowFollowerEnd(FollowerEnd):
             "slotted_hollow_wall_thickness": "Wall Thickness",
             "slotted_hollow_width": "Slot Width",
         }
+
+    @classmethod
+    def generated_length(cls, config_data: dict[str, float]) -> float:
+        return config_data["slotted_hollow_depth"]
 
     @classmethod
     def generate(cls, follower_length: float, follower_diameter: float, config_data: dict[str, float]) -> tuple[Part | None, float]:
@@ -356,6 +432,10 @@ class SchlageFollowerEnd(FollowerEnd):
         return {}
 
     @classmethod
+    def generated_length(cls, config_data: dict[str, float]) -> float:
+        return 5.25*MM
+
+    @classmethod
     def generate(cls, follower_length: float, follower_diameter: float, config_data: dict[str, float]) -> tuple[Part | None, float]:
         placement_radius = 4.75 * MM
         inner_radius = 3 * MM
@@ -381,49 +461,54 @@ class SchlageFollowerEnd(FollowerEnd):
 class Follower:
     @classmethod
     def generate(cls, config_data: FollowerConfigData) -> Part:
-        top_cls: FollowerEnd = FollowerEnd._list[config_data.top_tag]
-        bottom_cls: FollowerEnd = FollowerEnd._list[config_data.bottom_tag]
+        top_cls: type[FollowerEnd] = FollowerEnd._list[config_data.top_tag]
+        bottom_cls: type[FollowerEnd] = FollowerEnd._list[config_data.bottom_tag]
+
+        if config_data.length <= 0:
+            raise ValueError("Follower needs a positive length")
+        if config_data.diameter <= 0:
+            raise ValueError("Follower needs a positive diameter")
 
         top_part, top_length = top_cls.generate(config_data.length, config_data.diameter, config_data.top_config)
         bottom_part, bottom_length = bottom_cls.generate(config_data.length, config_data.diameter, config_data.bottom_config)
 
         remaining_length = config_data.length - top_length - bottom_length
+        if remaining_length <= 0:
+            raise ValueError("Follower ends take up more length than total follower length")
         radius = config_data.diameter / 2
 
         end_offset = remaining_length / 2
-        print(end_offset)
         if top_part is not None:
             top_part.position += (0, 0, end_offset + top_length / 2)
             if config_data.top_config:
-                top_part = top_part.rotate(Axis.Z, config_data.top_config["rotation"])
+                top_part = top_part.rotate(Axis.Z, config_data.top_config.get("rotation", 0))
         if bottom_part is not None:
             bottom_part = bottom_part.rotate(Axis.X, 180)
             bottom_part.position -= (0, 0, end_offset + bottom_length / 2)
             if config_data.bottom_config:
-                bottom_part = bottom_part.rotate(Axis.Z, config_data.bottom_config["rotation"])
+                bottom_part = bottom_part.rotate(Axis.Z, config_data.bottom_config.get("rotation", 0))
 
         chamfer_amount = config_data.diameter / 14
+        end_chamfer_amount = chamfer_amount * 1.4
         with BuildPart() as follower:
             Cylinder(radius=radius, height=remaining_length)
             if top_part is not None:
                 add(top_part)
                 with BuildPart(mode=Mode.SUBTRACT) as top_chamfer:
-                    chamfer_amount *= 1.4
                     with Locations((0, 0, end_offset + top_length)):
-                        add(geom_tools.Tube(radius - chamfer_amount / 2, radius + chamfer_amount * 2, chamfer_amount * 2 + 0.001))
+                        add(geom_tools.Tube(radius - end_chamfer_amount / 2, radius + end_chamfer_amount * 2, end_chamfer_amount * 2 + 0.001))
                     bottom_edges = top_chamfer.edges().group_by(Axis.Z)[0].sort_by(Axis.X)[-1]
-                    chamfer(bottom_edges, chamfer_amount)
+                    chamfer(bottom_edges, end_chamfer_amount)
             else:
                 top_edge = follower.edges().sort_by(Axis.Z)[-1]
                 chamfer(top_edge, chamfer_amount)
             if bottom_part is not None:
                 add(bottom_part)
                 with BuildPart(mode=Mode.SUBTRACT) as bottom_chamfer:
-                    chamfer_amount *= 1.4
                     with Locations((0, 0, -end_offset - bottom_length)):
-                        add(geom_tools.Tube(radius - chamfer_amount / 2, radius + chamfer_amount * 2, chamfer_amount * 2 + 0.001))
+                        add(geom_tools.Tube(radius - end_chamfer_amount / 2, radius + end_chamfer_amount * 2, end_chamfer_amount * 2 + 0.001))
                     top_edges = bottom_chamfer.edges().group_by(Axis.Z)[-1].sort_by(Axis.X)[-1]
-                    chamfer(top_edges, chamfer_amount)
+                    chamfer(top_edges, end_chamfer_amount)
             else:
                 bottom_edge = follower.edges().sort_by(Axis.Z)[0]
                 chamfer(bottom_edge, chamfer_amount)
