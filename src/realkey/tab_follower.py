@@ -120,7 +120,7 @@ def load_follower_end(is_top: bool, tag: str, config: None | dict[str, float]):
         pattern="^\\d*(\\.\\d{0,3})?$",
         classes=["length-input-text"],
     )
-    rotation_group = web.span(classes=["length-input", "rotation-input"])
+    rotation_group = web.span(classes=["length-input"])
     rotation_group.append(rotation_input, web.span("deg", classes=["rotation-input-unit"]))
     p.append(l, web.br(), rotation_group)
     div_element._web_element.append(p)  # type: ignore

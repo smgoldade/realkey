@@ -1,38 +1,125 @@
 # How to Contribute
 
-## Basic Function
-A foreground UI python script starts with [main.py](https://github.com/smgoldade/realkey/blob/main/main.py). build123d is mocked out in this environment to keep load times to a minimum.
-A background worker script starts with [worker.py](https://github.com/smgoldade/realkey/blob/main/worker.py), which receives requests from the foreground UI to do the heavy lifting. This background worker takes quite a bit of time to load as it needs to fetch build123d and other packages needed by build123d.
+## Architecture
 
-Classes that extend [Key](https://github.com/smgoldade/realkey/blob/main/src/realkey/key.py) register themselves with the internal list.
-This internal list is used to show available keys to generate on the interface which exists at [tab_key.py](https://github.com/smgoldade/realkey/blob/main/src/realkey/tab_key.py).
+The browser application is split into lightweight foreground code and a CAD worker:
+
+- [main.py](main.py) starts the foreground PyScript runtime. It mocks the small build123d surface needed to import metadata without loading the CAD engine.
+- [web_main.py](src/realkey/web_main.py) coordinates tabs, validation, worker state, generation, downloads, sharing, and user-facing status messages.
+- [worker.py](worker.py) installs build123d and its browser dependencies, generates geometry, and exports STL and STEP data.
+- [model_view.js](model_view.js) loads STL data into Three.js and manages model fitting, resizing, materials, lighting, and resource disposal.
+
+The foreground interface remains usable while the worker loads. Geometry operations belong in `blank()`, `key()`, follower generation, or worker-side helpers; metadata and validation methods must remain safe to import in the lightweight foreground runtime.
+
+`Key` and `FollowerEnd` subclasses register themselves in typed class registries. The UI builds its available options from these registries.
+
+## Development Setup
+
+realkey requires Python 3.13 or 3.14.
+
+```console
+python -m venv .venv
+```
+
+Activate the virtual environment, then install the development dependencies and run the tests:
+
+```console
+python -m pip install -e ".[dev]"
+python -m unittest discover -s tests -v
+```
+
+The GitHub Actions workflow performs a normal package installation before running the same test discovery command. This intentionally verifies behavior outside an editable source checkout.
+
+Use `ocp_vscode` to inspect geometry while developing. Key modules contain optional `__main__` blocks that can be adapted for local visualization and STEP export.
 
 ## Adding a Key
-### Initial File Creation
-Follow existing directory structure.
 
-For each key type, add a class that extends [Key](https://github.com/smgoldade/realkey/blob/main/src/realkey/key.py)
+### Implement the key class
 
-All methods besides blank and key should NOT USE build123d or any other heavy library.
+Create a module under `src/realkey/` and define a class extending [Key](src/realkey/key.py). Implement the following class methods:
 
-Implement each method:
-- **tag** - this defines an internal, non-user seen name used to tag the key family. Make it unique for your key, in snake_case. An example would be "miwa_sr" or "schlage_classic" and not "miwa" or "SchlageClassic".
-- **display_name** - this is the display name for the key type, shown to the user. E.g. "ASSA Desmo"
-- **profiles** - returns a dictionary of key profiles. The outer dictionary is profile groupings to an inner dictionary. A blank group displays no group. The inner dictionary keys are unique and used by your code to figure out which profile is requested, the value for the key is the display name for that profile. E.g. ```python {"Group Name" : {"6pin" : "6-Pin", "7pin" : "7-Pin"}} ```
-- **keyways** - returns a dictionary of keyways. The outer dictionary is keyway groupings to an inner dictionary. A blank group displays no group. The inner dictionary keys are unique and used by your code to figure out which keyway is selected, the value is the display name for that profile. ```python {"Group Name": {"c" : "C", "e" : "E"}} ```
-- **basic_bitting_definition** - returns a string that describes the rules for the bitting string. It's helpful to provide the range of cuts and amount necessary to generate a working key. HTML can be used to help spice up the information displayed.
-- **advanced_bitting_definition** - if a string is returned, it becomes the HTML that lives inside an popover, designed to provide as much information as may be necessary to define the bitting of the key. See the MIWA SR for a good example.
-- **validate_bitting** - validates if the bitting will generate an allowable key. Raise an exception (ValueError or similar) if an invalid bitting is specified, with a reason as the error message to provide the user.
-- **blank** - generate a blank for the given profile and keyway. This can be done by loading a model file from resources, extruding SVGs, or even entirely in code, entirely up to the developer.
-- **key** - generates a key for a given profile, keyway, and bitting. Typically calls validate_bitting and blank right away, and then beforms boolean geometric operations on the blank to generate the final key model
+- **`tag()`** returns a unique internal snake-case identifier, such as `miwa_sr`.
+- **`display_name()`** returns the name shown in the interface.
+- **`profiles()`** returns grouped profile options in the form `{"Group": {"tag": "Display name"}}`. Use an empty outer key for ungrouped options.
+- **`keyways()`** returns grouped keyway options using the same structure.
+- **`basic_bitting_definition()`** returns concise HTML explaining cut count, order, depth range, and an example.
+- **`advanced_bitting_definition()`** returns detailed HTML for the popover, or `None` when no advanced information is needed.
+- **`validate_bitting()`** rejects invalid cut counts, characters, track structure, and depth ranges with a useful exception message.
+- **`blank()`** returns a valid, non-empty build123d `Part` for the requested profile and keyway.
+- **`key()`** validates the bitting, builds the blank, applies the cuts, and returns a valid build123d `Part`.
 
-### Making the Key Show Up
-Make sure the python package is imported in both [tab_key.py](https://github.com/smgoldade/realkey/blob/main/src/realkey/tab_key.py) and [worker.py](https://github.com/smgoldade/realkey/blob/main/worker.py)
+Keep validation and metadata independent of heavy CAD behavior. The foreground calls them before the worker has loaded build123d.
 
-### Config!
-Make sure your python files are in [config.json](https://github.com/smgoldade/realkey/blob/main/config.json).
+### Add geometry resources
 
-Use lazy resource fetching utilizing [resource_fetcher.py](https://github.com/smgoldade/realkey/blob/main/src/realkey/resource_fetcher.py)
+Place runtime assets under:
 
-### Development Tips
-Use vscode with ocp_vscode to help develop new keys! You will see a main execution at the bottom of most key python files that uses ocp_vscode, which allows you to quickly run a key file and view the generated output from within vscode without having to spin-up the whole web setup, allowing for quicker prototyping and development.
+```text
+src/realkey/resources/<family>/
+```
+
+Load SVG and STEP files through [resource_fetcher.py](src/realkey/resource_fetcher.py):
+
+```python
+resource_path = resource_fetcher.fetch_resource("resources/Example/Blank.svg")
+if resource_path is None:
+    raise ValueError("Unable to load Example SVG")
+geometry = import_svg(resource_path)
+```
+
+Do not open repository-relative resource names directly. `fetch_resource()` resolves installed package data for native Python and lazily downloads the same asset in the browser worker. Browser-only image URLs use the static `src/realkey/resources/...` path.
+
+The package-data patterns in `pyproject.toml` include files directly inside `resources/` and one family directory below it. Update those patterns if a deeper directory structure is introduced.
+
+### Register the module
+
+Import the new module in all three locations:
+
+- [tab_key.py](src/realkey/tab_key.py), so the foreground registry contains it.
+- [worker.py](worker.py), so the worker registry contains it.
+- [test_geometry.py](tests/test_geometry.py), so automated geometry coverage contains it.
+
+Also add the Python module to the `files` mapping in [config.json](config.json), which makes it available to PyScript.
+
+### Add or update tests
+
+The geometry suite checks:
+
+- representative key blank/profile/keyway combinations;
+- every predefined follower configuration;
+- every top and bottom follower-end pairing; and
+- resource-backed generation from outside the repository working directory.
+
+Add focused tests for parsing, validation, or geometry behavior that is not covered by these registry-driven smoke tests. Tests should assert that generated parts are valid, contain one solid, and have positive volume.
+
+Run the suite before submitting changes:
+
+```console
+python -m unittest discover -s tests -v
+```
+
+## Adding a Follower End
+
+Create a `FollowerEnd` subclass in [follower.py](src/realkey/follower.py) and implement its tag, display name, configuration schema, generated length, and geometry generation.
+
+Configuration names should end in `_depth`, `_width`, or `_wall_thickness` where applicable so the combination tests can create representative values. Validate constraints such as positive dimensions, wall thickness relative to radius, and the combined end length before invoking low-level CAD operations.
+
+Add useful presets to `FOLLOWER_DEFINITIONS` when the dimensions represent a known follower.
+
+## Web Interface Changes
+
+- Use the element wrappers in [web_core.py](src/realkey/web_core.py) for common enabled, hidden, active, value, and unit behavior.
+- Route status text through `set_info()` and model overlays through `set_model_overlay_text()`.
+- Keep Generate availability derived from worker, validation, and generation state.
+- Keep download availability derived from the blobs for the model currently displayed.
+- Escape user-controlled text before assigning HTML.
+- Preserve responsive viewport fitting when changing `index.html`, `main.css`, or `model_view.js`.
+
+The repository currently has no browser automation, so manually verify worker loading, failed and successful generation, resizing, downloads, dialogs, sharing, and mobile layout after frontend changes.
+
+## Code Quality
+
+- Preserve typed registries and public return annotations.
+- Prefer idiomatic truth-value checks and specific exception handling.
+- Keep imports consistently grouped as standard library, third-party packages, and local modules.
+- Preserve unrelated working-tree changes and avoid committing generated geometry or build artifacts.
