@@ -64,70 +64,73 @@
         </div>
         <div id="main">
             <div class="input-pane">
-                <div class="tab-select">
-                    <button id="key-tab-button" class="active" title="Key"><i class="fa-solid fa-key"></i></button>
-                    <button id="follower-tab-button" title="Follower"><img src="src/realkey/resources/plug_follower.svg"></button>
+                <div class="input-scroll">
+                    <div class="tab-select">
+                        <button id="key-tab-button" class="active" title="Key"><i class="fa-solid fa-key"></i></button>
+                        <button id="follower-tab-button" title="Follower"><img src="src/realkey/resources/plug_follower.svg"></button>
+                    </div>
+                    <div id="key-tab" class="tab">
+                        <div class="field">
+                            <label for="key-select">Key family</label>
+                            <select id="key-select" disabled>
+                                <option>No keys loaded...</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="profile-select">Profile</label><br />
+                            <select id="profile-select" disabled>
+                                <option>No profiles loaded...</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="keyway-select">Keyway</label><br />
+                            <select id="keyway-select" disabled>
+                                <option>No keyways loaded...</option>
+                            </select>
+                        </div>
+                        <div id="bitting-instructions"></div>
+                        <button id="show-advanced" class="info-button hide" popovertarget="advanced-bitting-dialog"><i class="fa-regular fa-circle-question"></i>Advanced</button>
+                        <div class="field">
+                            <label for="bitting">Bitting</label>
+                            <input id="bitting" type="text" placeholder="Leave empty to generate blank key" disabled />
+                        </div>
+                    </div>
+                    <div id="follower-tab" class="tab hide">
+                        <div class="field">
+                            <label for="follower-select">Follower preset</label>
+                            <select id="follower-select" disabled>
+                                <option>No followers loaded...</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="follower-length">Total length</label>
+                            <span id="follower-length"></span>
+                        </div>
+                        <div class="field">
+                            <label for="follower-diameter">Diameter</label>
+                            <span id="follower-diameter"></span>
+                        </div>
+                        <div class="field">
+                            <label for="follower-top-select">Top end</label>
+                            <select id="follower-top-select" disabled>
+                                <option>No ends loaded...</option>
+                            </select>
+                        </div>
+                        <div id="follower-top-div" class="follower-end"></div>
+                        <div class="field">
+                            <label for="follower-bottom-select">Bottom end</label>
+                            <select id="follower-bottom-select" disabled>
+                                <option>No ends loaded...</option>
+                            </select>
+                        </div>
+                        <div id="follower-bottom-div" class="follower-end"></div>
+                    </div>
                 </div>
-                <div id="key-tab" class="tab">
-                    <div class="field">
-                        <label for="key-select">Key family</label>
-                        <select id="key-select" disabled>
-                            <option>No keys loaded...</option>
-                        </select>
+                <div class="generate-footer">
+                    <div id="info" role="status" aria-live="polite"></div>
+                    <div class="generate-row">
+                        <button id="generate" class="primary-button" disabled><i class="fa-solid fa-cube"></i> Generate model</button>
                     </div>
-                    <div class="field">
-                        <label for="profile-select">Profile</label><br />
-                        <select id="profile-select" disabled>
-                            <option>No profiles loaded...</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label for="keyway-select">Keyway</label><br />
-                        <select id="keyway-select" disabled>
-                            <option>No keyways loaded...</option>
-                        </select>
-                    </div>
-                    <div id="bitting-instructions"></div>
-                    <button id="show-advanced" class="info-button hide" popovertarget="advanced-bitting-dialog"><i class="fa-regular fa-circle-question"></i>Advanced</button>
-                    <div class="field">
-                        <label for="bitting">Bitting</label>
-                        <input id="bitting" type="text" placeholder="Leave empty to generate blank key" disabled />
-                    </div>
-                </div>
-                <div id="follower-tab" class="tab hide">
-                    <div class="field">
-                        <label for="follower-select">Follower preset</label>
-                        <select id="follower-select" disabled>
-                            <option>No followers loaded...</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label for="follower-length">Total length</label>
-                        <span id="follower-length"></span>
-                    </div>
-                    <div class="field">
-                        <label for="follower-diameter">Diameter</label>
-                        <span id="follower-diameter"></span>
-                    </div>
-                    <div class="field">
-                        <label for="follower-top-select">Top end</label>
-                        <select id="follower-top-select" disabled>
-                            <option>No ends loaded...</option>
-                        </select>
-                    </div>
-                    <div id="follower-top-div" class="follower-end"></div>
-                    <div class="field">
-                        <label for="follower-bottom-select">Bottom end</label>
-                        <select id="follower-bottom-select" disabled>
-                            <option>No ends loaded...</option>
-                        </select>
-                    </div>
-                    <div id="follower-bottom-div" class="follower-end"></div>
-                </div>
-                <hr>
-                <div id="info" role="status" aria-live="polite"></div>
-                <div class="generate-row">
-                    <button id="generate" class="primary-button" disabled><i class="fa-solid fa-cube"></i> Generate model</button>
                 </div>
             </div>
             <div class="view-pane">
