@@ -22,6 +22,7 @@ show_advanced = web_core.Element(web.page["show-advanced"])
 bitting_instructions = web_core.Element(web.page["bitting-instructions"])
 bitting = web_core.StringValueElement(web.page["bitting"])
 advanced_bitting_info = web_core.Element(web.page["advanced-bitting-info"])
+advanced_bitting_dialog = web_core.DialogElement(web.page["advanced-bitting-dialog"])
 
 
 def get_selected_key() -> type[key.Key] | None:
@@ -100,6 +101,16 @@ def profile_change():
 @when("change", "#keyway-select")
 def keyway_change():
     run_validation()
+
+
+@when("click", "#show-advanced")
+def show_advanced_bitting():
+    advanced_bitting_dialog.show_modal()
+
+
+@when("click", "#close-advanced-bitting")
+def close_advanced_bitting():
+    advanced_bitting_dialog.close()
 
 
 def get_pretty_name() -> str:

@@ -187,7 +187,23 @@ dialog::backdrop {
 }
 
 #advanced-bitting-dialog {
-    width: min(1120px, calc(100vw - 48px));
+    width: min(1120px, calc(100vw - 32px));
+    padding: 18px;
+}
+
+#about-dialog[open],
+#advanced-bitting-dialog[open],
+#share-dialog[open] {
+    display: flex;
+    flex-direction: column;
+}
+
+#advanced-bitting-info {
+    min-width: 0;
+    padding: 0 10px 8px 0;
+    flex: 1 1 auto;
+    max-height: none;
+    overflow-x: auto;
 }
 
 #advanced-bitting-info .advanced-bitting-tables {
@@ -199,11 +215,6 @@ dialog::backdrop {
     min-width: 0;
     flex: 1 1 0;
     table-layout: fixed;
-}
-
-#about-dialog:popover-open {
-    display: flex;
-    flex-direction: column;
 }
 
 .dialog-toolbar {

@@ -134,7 +134,7 @@ class SGSDB(key.Key):
         return (
             "<h2>S&G Safe Deposit Box Keys</h2>"
             "These are keys for S&G lever locks used in safe deposit boxes. Decoding can be done by looking at the levers on most S&G as they are labelled, except for the rekeyable 41XX and 45XX which need examination."
-            "<div class='even-flex'>"
+            "<div class='even-flex advanced-bitting-tables'>"
             "<table><caption>Profile</caption>"
             "<thead>"
             "<tr><th>Lock Series</th><th>Renter Key</th><th>Guard Key</th>"

@@ -57,6 +57,14 @@ class Element:
         self._web_element.hidePopover()  # type: ignore
 
 
+class DialogElement(Element):
+    def show_modal(self):
+        self._web_element.showModal()  # type: ignore
+
+    def close(self):
+        self._web_element.close()  # type: ignore
+
+
 class StringValueElement(Element):
     @property
     def value(self) -> str:

@@ -18,7 +18,8 @@ copy_link = web_core.Element(web.page["copy-link"])
 _info = web_core.Element(web.page["info"])
 model_description = web_core.Element(web.page["model-description"])
 _model_overlay_text = web_core.Element(web.page["model-overlay-text"])
-share_dialog = web_core.Element(web.page["share-dialog"])
+about_dialog = web_core.DialogElement(web.page["about-dialog"])
+share_dialog = web_core.DialogElement(web.page["share-dialog"])
 share_settings = web_core.CheckboxElement(web.page["share-settings"])
 share_generate = web_core.CheckboxElement(web.page["share-generate"])
 toast = web_core.Element(web.page["toast"])
@@ -198,6 +199,27 @@ def change_to_follower_tab():
     change_to_tab("follower")
 
 
+# Dialog controls
+@when("click", "#show-about-dialog")
+def show_about_dialog():
+    about_dialog.show_modal()
+
+
+@when("click", "#close-about-dialog")
+def close_about_dialog():
+    about_dialog.close()
+
+
+@when("click", "#show-share-dialog")
+def show_share_dialog():
+    share_dialog.show_modal()
+
+
+@when("click", "#close-share-dialog")
+def close_share_dialog():
+    share_dialog.close()
+
+
 # Model generation
 @when("click", "#generate")
 async def start_generation():
@@ -293,7 +315,7 @@ async def create_share_link():
         await show_toast("Could not copy link. Check clipboard permissions and try again.", False)
         return
 
-    share_dialog.hide_popover()  # type: ignore
+    share_dialog.close()
     await show_toast("Share link copied to the clipboard.", True)
 
 

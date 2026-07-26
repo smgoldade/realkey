@@ -20,19 +20,19 @@
 
     <link rel="stylesheet" href="https://fonts.bunny.net/css?family=alexandria:400,600,700" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" type="text/css">
-    <link rel="stylesheet" href="https://pyscript.net/releases/2026.6.1/core.css" type="text/css">
+    <link rel="stylesheet" href="https://pyscript.net/releases/2026.7.2/core.css" type="text/css">
 
     <link rel="stylesheet" href="main.css" type="text/css">
 
     <script type="importmap">
         {
             "imports": {
-                "three": "https://cdn.jsdelivr.net/npm/three@0.184.0/+esm",
-                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"
+                "three": "https://cdn.jsdelivr.net/npm/three@0.185.0/+esm",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"
             }
         }
     </script>
-    <script type="module" src="https://pyscript.net/releases/2026.6.1/core.js"></script>
+    <script type="module" src="https://pyscript.net/releases/2026.7.2/core.js"></script>
     <script type="module" src="model_view.js"></script>
     <script type="py" src="main.py" config="config.json"></script>
     <script type="py" worker name="keygen" src="worker.py" config="config.json"></script>
@@ -58,8 +58,8 @@
                 </div>
             </div>
             <div id="header-right">
-                <button class="info-button" popovertarget="share-dialog" title="Share" aria-label="Share configuration"><i class="fa-solid fa-share-nodes"></i></button>
-                <button class="info-button" popovertarget="about-dialog" title="About realkey" aria-label="About realkey"><i class="fa-regular fa-circle-question"></i></button>
+                <button id="show-share-dialog" class="info-button" type="button" title="Share" aria-label="Share configuration"><i class="fa-solid fa-share-nodes"></i></button>
+                <button id="show-about-dialog" class="info-button" type="button" title="About realkey" aria-label="About realkey"><i class="fa-regular fa-circle-question"></i></button>
             </div>
         </div>
         <div id="main">
@@ -89,7 +89,7 @@
                             </select>
                         </div>
                         <div id="bitting-instructions"></div>
-                        <button id="show-advanced" class="info-button hide" popovertarget="advanced-bitting-dialog"><i class="fa-regular fa-circle-question"></i>Advanced</button>
+                        <button id="show-advanced" class="info-button hide" type="button"><i class="fa-regular fa-circle-question"></i>Advanced</button>
                         <div class="field">
                             <label for="bitting">Bitting</label>
                             <input id="bitting" type="text" placeholder="Leave empty to generate blank key" disabled />
@@ -149,10 +149,10 @@
             </div>
         </div>
     </div>
-    <dialog id="about-dialog" popover>
-        <div class="dialog-toolbar"><button class="info-button" popovertarget="about-dialog" popovertargetaction="hide" title="Close"><i class="fa-solid fa-xmark"></i></button></div>
+    <dialog id="about-dialog" aria-labelledby="about-dialog-title">
+        <div class="dialog-toolbar"><button id="close-about-dialog" class="info-button" type="button" title="Close" aria-label="Close about realkey"><i class="fa-solid fa-xmark"></i></button></div>
         <div id="about-info" class="scrollable-dialog">
-            <h2>About realkey</h2>
+            <h2 id="about-dialog-title">About realkey</h2>
             <p>realkey is a system for generating 3D models of keys that can be used for 3D printing keys. It runs
                 entirely in your local browser!</p>
             <p>realkey is powered at its core by <a href="https://build123d.readthedocs.io/en/latest/" target="_blank">build123d</a>, a code-based CAD system written in Python.</p>
@@ -195,12 +195,12 @@
             <h2><a href="https://github.com/smgoldade/realkey" title="realkey GitHub" target="_blank"><i class="fa-brands fa-github"></i></a></h2>
         </div>
     </dialog>
-    <dialog id="advanced-bitting-dialog" popover>
-        <div style="float: right;"><button class="info-button" popovertarget="advanced-bitting-dialog" popovertargetaction="hide" title="Close"><i class="fa-solid fa-xmark"></i></button></div>
+    <dialog id="advanced-bitting-dialog" aria-label="Advanced bitting information">
+        <div class="dialog-toolbar"><button id="close-advanced-bitting" class="info-button" type="button" title="Close" aria-label="Close advanced bitting information"><i class="fa-solid fa-xmark"></i></button></div>
         <div id="advanced-bitting-info" class="scrollable-dialog"></div>
     </dialog>
-    <dialog id="share-dialog" popover>
-        <div style="float: right;"><button class="info-button" popovertarget="share-dialog" popovertargetaction="hide" title="Close"><i class="fa-solid fa-xmark"></i></button></div>
+    <dialog id="share-dialog" aria-label="Share configuration">
+        <div class="dialog-toolbar"><button id="close-share-dialog" class="info-button" type="button" title="Close" aria-label="Close share configuration"><i class="fa-solid fa-xmark"></i></button></div>
         <p id="share-setup" class="scrollable-dialog">
             <input type="checkbox" id="share-settings" checked><label for="share-settings">Share settings?</label><br>
             <input type="checkbox" id="share-generate" checked><label for="share-generate">Auto generate?</label><br>

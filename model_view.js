@@ -4,6 +4,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js"
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js"
 import { STLLoader } from "three/addons/loaders/STLLoader.js"
 
+// Constants used for lighting and look
 const ENVIRONMENT_INTENSITY = 0.6
 const MAX_PIXEL_RATIO = 2
 const MIN_OBJECT_RADIUS = 0.001
@@ -12,6 +13,7 @@ const MATERIAL_ENVIRONMENT_INTENSITY = 0.65
 const MATERIAL_SPECULAR_INTENSITY = 0.5
 const TONE_MAPPING_EXPOSURE = 0.72
 
+// WebGL2 check for Chumi
 if (!WebGL.isWebGL2Available()) {
     const status = document.querySelector("#status")
     if (status !== null) {
@@ -21,6 +23,7 @@ if (!WebGL.isWebGL2Available()) {
     throw new Error("WebGL 2 is not available")
 }
 
+// Canvas and viewport verification
 const canvas = document.querySelector("#canvas")
 const viewport = document.querySelector("#model-view")
 if (!(canvas instanceof HTMLCanvasElement)) {
@@ -30,7 +33,8 @@ if (!(viewport instanceof HTMLElement)) {
     throw new Error("Model viewport was not found")
 }
 
-const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
+// Camera setup
+const camera = new THREE.PerspectiveCamera(75, 1, 0.01, 10000)
 const scene = new THREE.Scene()
 const renderGroup = new THREE.Group()
 
@@ -136,7 +140,7 @@ const AMBIENT_LIGHT_INTENSITY = 0.16
 const LIGHT_COUNT = 10
 const LIGHT_RADIUS = 250
 const LIGHT_STRENGTH = 0.75
-const SHADOW_CASTING_LIGHT_COUNT = 1
+const SHADOW_CASTING_LIGHT_COUNT = 10
 const SHADOW_INTENSITY = 0.4
 const SHADOW_RADIUS = 4
 
@@ -144,10 +148,14 @@ const ambientLight = new THREE.AmbientLight(0xFFFFFF, AMBIENT_LIGHT_INTENSITY)
 scene.add(ambientLight)
 
 for (let index = 0; index < LIGHT_COUNT; index += 1) {
-    const latticePosition = ((2 * index) / (1 + Math.sqrt(5))) % 1
-    const verticalPosition = index / (LIGHT_COUNT - 1)
-    const theta = 2 * Math.PI * latticePosition
-    const phi = Math.acos(1 - 2 * verticalPosition)
+    // construct a spherical lattice for lights using Fibonacci lattice method
+    // Square lattice
+    const sx = ((2 * index) / (1 + Math.sqrt(5))) % 1
+    const sy = index / (LIGHT_COUNT - 1)
+    // lat, lon lattice
+    const theta = 2 * Math.PI * sx
+    const phi = Math.acos(1 - 2 * sy)
+    // convert to x,y,z coords
     const x = LIGHT_RADIUS * Math.cos(theta) * Math.sin(phi)
     const y = LIGHT_RADIUS * Math.sin(theta) * Math.sin(phi)
     const z = LIGHT_RADIUS * Math.cos(phi)
