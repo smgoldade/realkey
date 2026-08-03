@@ -33,7 +33,7 @@ Use `ocp_vscode` to inspect geometry while developing in VS Code. Key modules co
 
 ### Implement the key class
 
-Create a module under `src/realkey/` and define a class extending [Key](src/realkey/key.py). Implement the following class methods:
+Create a module under `src/realkey/keys/` and define a class extending [Key](src/realkey/key.py). Use a lowercase snake-case module name and implement the following class methods:
 
 - **`tag()`** returns a unique internal snake-case identifier, such as `miwa_sr`.
 - **`display_name()`** returns the name shown in the interface.
@@ -70,13 +70,9 @@ The package-data patterns in `pyproject.toml` include files directly inside `res
 
 ### Register the module
 
-Import the new module in all three locations:
+Add the new module name to `_BUILTIN_MODULES` in [keys/__init__.py](src/realkey/keys/__init__.py). The foreground, worker, and geometry tests call `keys.load_all()` to register every built-in implementation consistently.
 
-- [tab_key.py](src/realkey/tab_key.py), so the foreground registry contains it.
-- [worker.py](worker.py), so the worker registry contains it.
-- [test_geometry.py](tests/test_geometry.py), so automated geometry coverage contains it.
-
-Also add the Python module to the `files` mapping in [config.json](config.json), which makes it available to PyScript.
+Also add the module under the `keys/` destination in the `files` mapping in [config.json](config.json), which makes it available to PyScript.
 
 ### Add or update tests
 

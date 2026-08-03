@@ -22,14 +22,15 @@
         "{FROM}/svgtools.py": "{TO}/svgtools.py",
         "{FROM}/web_core.py": "{TO}/web_core.py",
         "{FROM}/web_main.py": "{TO}/web_main.py",
-        "{FROM}/assa.py": "{TO}/assa.py",
-        "{FROM}/dom.py": "{TO}/dom.py",
-        "{FROM}/miwa.py": "{TO}/miwa.py",
-        "{FROM}/opnus.py": "{TO}/opnus.py",
-        "{FROM}/paclock.py": "{TO}/paclock.py",
-        "{FROM}/sargentandgreenleaf.py": "{TO}/sargentandgreenleaf.py",
-        "{FROM}/schlage.py": "{TO}/schlage.py",
-        "{FROM}/vsr.py": "{TO}/vsr.py",
+        "{FROM}/keys/__init__.py": "{TO}/keys/__init__.py",
+        "{FROM}/keys/assa.py": "{TO}/keys/assa.py",
+        "{FROM}/keys/dom.py": "{TO}/keys/dom.py",
+        "{FROM}/keys/miwa.py": "{TO}/keys/miwa.py",
+        "{FROM}/keys/opnus.py": "{TO}/keys/opnus.py",
+        "{FROM}/keys/paclock.py": "{TO}/keys/paclock.py",
+        "{FROM}/keys/sargent_and_greenleaf.py": "{TO}/keys/sargent_and_greenleaf.py",
+        "{FROM}/keys/schlage.py": "{TO}/keys/schlage.py",
+        "{FROM}/keys/vsr.py": "{TO}/keys/vsr.py",
         "{FROM}/follower.py": "{TO}/follower.py"
     }
 }

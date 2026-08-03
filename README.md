@@ -24,7 +24,7 @@ python -m pip install .
 Key implementations return build123d `Part` objects:
 
 ```python
-from realkey.paclock import PR1
+from realkey.keys.paclock import PR1
 
 blank = PR1.blank("pr1", "pr1")
 cut_key = PR1.key("pro", "pr1", "6212121")

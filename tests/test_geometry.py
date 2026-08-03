@@ -5,17 +5,7 @@ from collections.abc import Iterator
 
 from build123d import Part
 
-# Import every key implementation so Key's subclass registry is populated.
-from realkey import (  # noqa: F401
-    assa,
-    dom,
-    miwa,
-    opnus,
-    paclock,
-    sargentandgreenleaf,
-    schlage,
-    vsr,
-)
+from realkey import keys
 from realkey.follower import (
     FOLLOWER_DEFINITIONS,
     Follower,
@@ -23,6 +13,8 @@ from realkey.follower import (
     FollowerEnd,
 )
 from realkey.key import Key
+
+keys.load_all()
 
 
 def _flatten_groups(groups: dict[str, dict[str, str]]) -> list[str]:

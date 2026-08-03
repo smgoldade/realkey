@@ -1,3 +1,5 @@
+"""VSR key-family implementations."""
+
 from re import L
 
 from build123d import *

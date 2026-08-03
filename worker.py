@@ -23,19 +23,9 @@ print("[BG] Packages installed")
 
 from build123d import *
 
-from realkey import (
-    assa,
-    dom,
-    follower,
-    key,
-    miwa,
-    opnus,
-    paclock,
-    resource_fetcher,
-    sargentandgreenleaf,
-    schlage,
-    vsr,
-)
+from realkey import follower, key, keys, resource_fetcher
+
+keys.load_all()
 
 
 def shared_generate(part: Part) -> dict[str, str]:

@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 from realkey import resource_fetcher
-from realkey.paclock import PR1
+from realkey.keys.paclock import PR1
 
 
 class ResourceTests(unittest.TestCase):

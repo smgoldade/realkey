@@ -1,3 +1,5 @@
+"""Opnus key-family implementations."""
+
 from math import atan2, pi, sqrt
 
 from build123d import *

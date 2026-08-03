@@ -1,3 +1,5 @@
+"""DOM key-family implementations."""
+
 from build123d import *
 
 from realkey import key, key_cutters, resource_fetcher, svgtools

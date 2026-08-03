@@ -1,19 +1,14 @@
 from pyscript import web, when
 
 from realkey import (
-    assa,
-    dom,
     key,
-    miwa,
-    opnus,
-    paclock,
-    sargentandgreenleaf,
-    schlage,
+    keys,
     tab,
-    vsr,
     web_core,
     web_main,
 )
+
+keys.load_all()
 
 key_select = web_core.SelectElement(web.page["key-select"])
 profile_select = web_core.SelectElement(web.page["profile-select"])

@@ -1,3 +1,5 @@
+"""ASSA key-family implementations."""
+
 from build123d import *
 
 from realkey import key, resource_fetcher, svgtools
