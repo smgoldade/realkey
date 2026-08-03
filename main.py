@@ -1,11 +1,12 @@
 import sys
+import traceback
 
 from js import URL
 import micropip  # type: ignore
-from pyscript import display, window, workers
+from pyscript import window, workers
 
 # Kick off key generating worker
-display("Loading interface...", target="status", append=False)
+window.realkeyBoot.setStatus("Loading interface...")
 keygen_loading = workers["keygen"]
 await micropip.install(["typing-extensions"])
 
@@ -35,7 +36,15 @@ bogus123d.Wire = Empty
 # Jump into realkey
 from realkey import web_main
 
-await web_main.main()
+try:
+    await web_main.main()
+except Exception as error:
+    window.realkeyBoot.fail(
+        "Python failed while starting realkey",
+        "The interface could not finish loading. Reload realkey to try again.",
+        traceback.format_exc(),
+    )
+    raise
 
 print("[FG] Waiting for background install")
 try:
@@ -45,6 +54,11 @@ try:
 except Exception as error:
     print(f"[FG] Background worker failed to load: {error}")
     web_main.background_worker_failed()
+    window.realkeyBoot.fail(
+        "Model generator failed to load",
+        "The background Python worker could not start. Reload realkey to try again.",
+        traceback.format_exc(),
+    )
 else:
     print("[FG] Background worker loaded")
     await web_main.background_worker_loaded(keygen)

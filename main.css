@@ -64,13 +64,6 @@ h1 {
     letter-spacing: -0.04em;
 }
 
-hr {
-    height: 1px;
-    margin: 18px 0;
-    border: 0;
-    background: var(--border);
-}
-
 button,
 input,
 select {
@@ -191,9 +184,7 @@ dialog::backdrop {
     padding: 18px;
 }
 
-#about-dialog[open],
-#advanced-bitting-dialog[open],
-#share-dialog[open] {
+dialog[open] {
     display: flex;
     flex-direction: column;
 }
@@ -224,8 +215,8 @@ dialog::backdrop {
     margin-bottom: 8px;
 }
 
-.app-shell {
-    width: min(1440px, 100%);
+#content {
+    width: 100%;
     height: 100%;
     margin: 0 auto;
     display: flex;
@@ -255,7 +246,7 @@ dialog::backdrop {
     color: #15110a;
 }
 
-.brand-copy {
+.brand > div {
     display: flex;
     flex-direction: column;
 }
@@ -314,12 +305,9 @@ dialog::backdrop {
     color: var(--brass-hover);
 }
 
-.generate-row {
-    margin: 12px 0 0;
-}
-
-.generate-row button {
+#generate {
     width: 100%;
+    margin-top: 12px;
 }
 
 #generate.worker-loading {
@@ -341,7 +329,7 @@ dialog::backdrop {
     opacity: 0.72;
 }
 
-.loading-spinner-button {
+#generate .loading-spinner {
     width: 18px;
     height: 18px;
     margin: 0;
@@ -350,7 +338,7 @@ dialog::backdrop {
     border-width: 3px;
 }
 
-#generate.worker-loading .loading-spinner-button {
+#generate.worker-loading .loading-spinner {
     border-color: rgb(196 154 82 / 28%);
     border-top-color: #f0cc87;
     box-shadow: 0 0 10px rgb(221 184 110 / 28%);
@@ -378,9 +366,7 @@ dialog::backdrop {
     display: flex;
     width: 100%;
     overflow: hidden;
-    border: 1px solid var(--border);
     border-radius: var(--radius-small);
-    background: #101314;
 }
 
 .length-input:focus-within {
@@ -421,16 +407,20 @@ dialog::backdrop {
     color: var(--brass-hover);
 }
 
+.input-scroll,
 .scrollable-dialog {
     min-height: 0;
-    max-height: calc(84vh - 44px);
-    max-height: calc(84dvh - 44px);
-    padding-right: 8px;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-color: var(--brass-dark) var(--surface);
     scrollbar-gutter: stable;
+}
+
+.scrollable-dialog {
+    max-height: calc(84vh - 44px);
+    max-height: calc(84dvh - 44px);
+    padding-right: 8px;
     touch-action: pan-y;
 }
 
@@ -444,8 +434,12 @@ dialog::backdrop {
     grid-template-columns: 1fr 1fr;
     gap: 6px;
     padding: 5px;
+    border-radius: var(--radius);
+}
+
+.length-input,
+.tab-select {
     border: 1px solid var(--border);
-    border-radius: 10px;
     background: #101314;
 }
 
@@ -493,14 +487,8 @@ dialog::backdrop {
 }
 
 .input-scroll {
-    min-height: 0;
     padding-right: 8px;
     flex: 1 1 auto;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-color: var(--brass-dark) var(--surface);
-    scrollbar-gutter: stable;
 }
 
 .generate-footer {
@@ -551,10 +539,6 @@ dialog::backdrop {
 .viewport-help {
     color: var(--text-dim);
     font-size: 0.7rem;
-}
-
-#content {
-    width: 100%;
 }
 
 #header {
@@ -658,7 +642,7 @@ dialog::backdrop {
     display: none;
 }
 
-.generation-card {
+#model-overlay-text > span {
     min-width: min(280px, calc(100% - 40px));
     max-width: calc(100% - 40px);
     padding: 20px 24px;
@@ -701,12 +685,16 @@ dialog::backdrop {
     color: var(--danger);
 }
 
-#bitting-instructions {
-    margin: 16px 0 10px;
-    padding: 12px;
+#bitting-instructions,
+#settings-detail {
     border: 1px solid var(--border);
     border-radius: var(--radius-small);
     background: #111415;
+}
+
+#bitting-instructions {
+    margin: 16px 0 10px;
+    padding: 12px;
     color: var(--text-dim);
     font-size: 0.9rem;
     line-height: 1.55;
@@ -740,7 +728,7 @@ dialog::backdrop {
 }
 
 .loader-panel {
-    min-width: min(360px, calc(100% - 40px));
+    width: min(620px, calc(100% - 40px));
     padding: 22px 26px;
     display: flex;
     gap: 18px;
@@ -751,13 +739,15 @@ dialog::backdrop {
     box-shadow: 0 0 28px var(--brass-glow);
 }
 
-.loader-copy {
+.loader-panel > div {
+    min-width: 0;
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 5px;
 }
 
-.loader-copy strong {
+.loader-panel > div > strong {
     color: var(--text);
     font-size: 1rem;
 }
@@ -765,6 +755,65 @@ dialog::backdrop {
 #status {
     color: var(--brass-hover);
     font-size: 0.78rem;
+}
+
+#boot-error-content {
+    display: none;
+    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+#boot-error-message {
+    margin: 0 0 14px;
+}
+
+#boot-error-content details {
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-small);
+    background: var(--bg);
+}
+
+#boot-error-content summary {
+    cursor: pointer;
+    color: var(--text-dim);
+}
+
+#boot-error-details {
+    max-height: min(30vh, 240px);
+    margin: 10px 0 0;
+    overflow: auto;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+#boot-retry {
+    width: 100%;
+}
+
+#loader.boot-error .loader-panel {
+    align-items: flex-start;
+    border-color: color-mix(in srgb, var(--danger) 65%, var(--border));
+    box-shadow: 0 0 28px rgb(219 114 104 / 16%);
+}
+
+#loader.boot-error #loader-spinner {
+    display: none;
+}
+
+#loader.boot-error #loader-title,
+#loader.boot-error #status {
+    color: var(--danger);
+}
+
+#loader.boot-error #boot-error-content {
+    display: block;
 }
 
 .loading-spinner {
@@ -778,7 +827,7 @@ dialog::backdrop {
     animation: spinner-rotate 800ms linear infinite;
 }
 
-.loading-spinner-large {
+#loader-spinner {
     width: 38px;
     height: 38px;
     border-width: 4px;
@@ -793,9 +842,6 @@ dialog::backdrop {
 #settings-detail {
     margin: 14px 0;
     padding: 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-small);
-    background: #111415;
 }
 
 #share-setup label {
@@ -832,7 +878,7 @@ dialog::backdrop {
     pointer-events: none;
 }
 
-.toast-message {
+#toast > div {
     padding: 14px 16px;
     display: flex;
     gap: 11px;
@@ -845,7 +891,7 @@ dialog::backdrop {
     line-height: 1.4;
 }
 
-.toast-message i {
+#toast > div > i {
     font-size: 1.05rem;
 }
 
@@ -914,7 +960,7 @@ dialog::backdrop {
         padding: 0;
     }
 
-    .app-shell {
+    #content {
         border-right: 0;
         border-left: 0;
         border-radius: 0;

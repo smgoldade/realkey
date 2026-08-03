@@ -53,7 +53,7 @@ def set_model_overlay_text(text: str = ""):
         _model_overlay_text.html = ""
         return
 
-    _model_overlay_text.html = f"""<span class="generation-card">
+    _model_overlay_text.html = f"""<span>
         <span class="loading-spinner" aria-hidden="true"></span>
         <span>{html.escape(text)}</span>
     </span>"""
@@ -81,7 +81,7 @@ def update_generation_availability():
         return
 
     if worker_loading:
-        generate.html = '<span class="loading-spinner loading-spinner-button" aria-hidden="true"></span> Model generator loading...'
+        generate.html = '<span class="loading-spinner" aria-hidden="true"></span> Model generator loading...'
         generate.enabled = False
         return
 
@@ -96,26 +96,24 @@ def update_download_availability():
 
 # Application lifecycle
 async def main():
-    await remove_loading()
+    await initialize_interface()
     await apply_search_params()
+    window.realkeyBoot.complete()
 
 
-async def remove_loading():
+async def initialize_interface():
     # defaults
     update_generation_availability()
     update_download_availability()
     set_info("")
     set_model_overlay_text()
 
-    loader = web.page["loader"]
     try:
         await model_view.loadObject("src/realkey/resources/realkey.stl", 0.25, 0.95)
         model_description.html = "<i>Is this a real key?</i>"
     except Exception as error:
         set_info(f"Unable to load the initial model: {error}", True)
         model_description.html = "<i>Initial model preview unavailable.</i>"
-    finally:
-        loader.classes.add("hide")
 
 
 async def background_worker_loaded(background_worker):
@@ -329,7 +327,7 @@ async def show_toast(message: str, success: bool):
 
     state_class: str = "toast-success" if success else "toast-failure"
     icon_class: str = "fa-circle-check" if success else "fa-circle-exclamation"
-    toast.html = f'<div class="toast-message {state_class}"><i class="fa-solid {icon_class}" aria-hidden="true"></i><span>{message}</span></div>'
+    toast.html = f'<div class="{state_class}"><i class="fa-solid {icon_class}" aria-hidden="true"></i><span>{message}</span></div>'
     toast.show_popover()
 
     await asyncio.sleep(4)

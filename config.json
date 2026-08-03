@@ -12,6 +12,7 @@
         "{PATH}": "./src/realkey",
         "{FROM}": "{PATH}",
         "{TO}": "./realkey",
+        "{FROM}/follower.py": "{TO}/follower.py",
         "{FROM}/geom_tools.py": "{TO}/geom_tools.py",
         "{FROM}/key_cutters.py": "{TO}/key_cutters.py",
         "{FROM}/key.py": "{TO}/key.py",
@@ -30,7 +31,6 @@
         "{FROM}/keys/paclock.py": "{TO}/keys/paclock.py",
         "{FROM}/keys/sargent_and_greenleaf.py": "{TO}/keys/sargent_and_greenleaf.py",
         "{FROM}/keys/schlage.py": "{TO}/keys/schlage.py",
-        "{FROM}/keys/vsr.py": "{TO}/keys/vsr.py",
-        "{FROM}/follower.py": "{TO}/follower.py"
+        "{FROM}/keys/vsr.py": "{TO}/keys/vsr.py"
     }
 }

@@ -24,6 +24,8 @@
 
     <link rel="stylesheet" href="main.css" type="text/css">
 
+    <script src="startup.js"></script>
+
     <script type="importmap">
         {
             "imports": {
@@ -39,20 +41,28 @@
 </head>
 
 <body>
-    <div id="loader">
-        <div class="loader-panel" role="status" aria-live="polite">
-            <span class="loading-spinner loading-spinner-large" aria-hidden="true"></span>
-            <div class="loader-copy">
-                <strong>Preparing realkey</strong>
+    <div id="loader" role="status" aria-live="polite" aria-atomic="true">
+        <div class="loader-panel">
+            <span id="loader-spinner" class="loading-spinner" aria-hidden="true"></span>
+            <div>
+                <strong id="loader-title">Preparing realkey</strong>
                 <span id="status">Loading Python...</span>
+                <div id="boot-error-content">
+                    <p id="boot-error-message"></p>
+                    <details>
+                        <summary>Technical details</summary>
+                        <pre id="boot-error-details"></pre>
+                    </details>
+                    <button id="boot-retry" class="primary-button" type="button">Reload realkey</button>
+                </div>
             </div>
         </div>
     </div>
-    <div id="content" class="app-shell">
+    <div id="content">
         <div id="header">
             <div class="brand">
                 <span class="brand-mark" aria-hidden="true"><i class="fa-solid fa-key"></i></span>
-                <div class="brand-copy">
+                <div>
                     <h1 id="header-text">realkey</h1>
                     <span class="brand-subtitle">Precision locksport model generator</span>
                 </div>
@@ -128,9 +138,7 @@
                 </div>
                 <div class="generate-footer">
                     <div id="info" role="status" aria-live="polite"></div>
-                    <div class="generate-row">
-                        <button id="generate" class="primary-button" disabled><i class="fa-solid fa-cube"></i> Generate model</button>
-                    </div>
+                    <button id="generate" class="primary-button" disabled><i class="fa-solid fa-cube"></i> Generate model</button>
                 </div>
             </div>
             <div class="view-pane">

@@ -15,11 +15,11 @@ const TONE_MAPPING_EXPOSURE = 0.72
 
 // WebGL2 check for Chumi
 if (!WebGL.isWebGL2Available()) {
-    const status = document.querySelector("#status")
-    if (status !== null) {
-        status.textContent = "WebGL issue detected."
-        status.appendChild(WebGL.getWebGL2ErrorMessage())
-    }
+    window.realkeyBoot?.fail(
+        "WebGL 2 is unavailable",
+        "realkey requires WebGL 2 to display generated models. Please use a compatible browser.",
+        "The browser did not provide a WebGL 2 rendering context.",
+    )
     throw new Error("WebGL 2 is not available")
 }
 
