@@ -8,6 +8,7 @@ assignees: smgoldade
 ---
 
 **Manufacturer**:
+
 **Model**:
 
 **Additional Info**
