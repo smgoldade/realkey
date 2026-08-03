@@ -15,7 +15,7 @@ realkey is a Python project designed to generate keys and other locksport tools.
 
 ## Python Library
 
-realkey is built on Python. To install the current checkout:
+realkey is built on Python 3.14. To install the current checkout:
 
 ```console
 python -m pip install .
@@ -38,18 +38,6 @@ The conceptual idea behind the key taxonomy is as follows:
 - **Keyway** defines the shape of the portion of the key that enters the lock. Some locks may come with a variety of different keyways. *E.g. C*
 - **Profile** defines the shape of the entire key from a profile view. This commonly is different between different pin count versions of the same lock type. *E.g. 6-pin*
 - **Type** defines the specific lock or lock family that the key works for. *E.g. Schlage Classic*
-
-## Repository Layout
-
-- `src/realkey/` contains key, follower, geometry, resource, and web-interface modules.
-- `src/realkey/resources/` contains packaged SVG, STEP, STL, and image assets.
-- `main.py` initializes the lightweight foreground PyScript interface.
-- `worker.py` installs the CAD runtime and performs geometry generation in a background worker.
-- `model_view.js` owns the Three.js preview, camera fitting, lighting, and model disposal.
-- `tests/` contains geometry and packaged-resource regression tests.
-- `.github/workflows/tests.yml` runs the test suite on Python 3.13.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development and extension guidance.
 
 ## Inspiration
 
