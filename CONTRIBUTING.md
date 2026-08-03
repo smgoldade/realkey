@@ -4,8 +4,8 @@
 
 The browser application is split into lightweight foreground code and a CAD worker:
 
-- [main.py](main.py) starts the foreground PyScript runtime. It mocks the small build123d surface needed to import metadata without loading the CAD engine.
-- [web_main.py](src/realkey/web_main.py) coordinates tabs, validation, worker state, generation, downloads, sharing, and user-facing status messages.
+- [main.py](main.py) starts the foreground PyScript runtime. It mocks the build123d surface needed to import metadata without loading the CAD engine.
+- [web_main.py](src/realkey/web_main.py) handles all the foreground logic including tabs, generation, downloading, and sharing
 - [worker.py](worker.py) installs build123d and its browser dependencies, generates geometry, and exports STL and STEP data.
 - [model_view.js](model_view.js) loads STL data into Three.js and manages model fitting, resizing, materials, lighting, and resource disposal.
 
@@ -15,7 +15,7 @@ The foreground interface remains usable while the worker loads. Geometry operati
 
 ## Development Setup
 
-realkey requires Python 3.13 or 3.14.
+realkey requires Python 3.14.
 
 ```console
 python -m venv .venv
@@ -27,10 +27,7 @@ Activate the virtual environment, then install the development dependencies and 
 python -m pip install -e ".[dev]"
 python -m unittest discover -s tests -v
 ```
-
-The GitHub Actions workflow performs a normal package installation before running the same test discovery command. This intentionally verifies behavior outside an editable source checkout.
-
-Use `ocp_vscode` to inspect geometry while developing. Key modules contain optional `__main__` blocks that can be adapted for local visualization and STEP export.
+Use `ocp_vscode` to inspect geometry while developing in VS Code. Key modules contain optional `__main__` blocks that can be adapted for local visualization and export.
 
 ## Adding a Key
 
@@ -58,7 +55,7 @@ Place runtime assets under:
 src/realkey/resources/<family>/
 ```
 
-Load SVG and STEP files through [resource_fetcher.py](src/realkey/resource_fetcher.py):
+Load resource files through [resource_fetcher.py](src/realkey/resource_fetcher.py):
 
 ```python
 resource_path = resource_fetcher.fetch_resource("resources/Example/Blank.svg")
@@ -102,24 +99,6 @@ python -m unittest discover -s tests -v
 
 Create a `FollowerEnd` subclass in [follower.py](src/realkey/follower.py) and implement its tag, display name, configuration schema, generated length, and geometry generation.
 
-Configuration names should end in `_depth`, `_width`, or `_wall_thickness` where applicable so the combination tests can create representative values. Validate constraints such as positive dimensions, wall thickness relative to radius, and the combined end length before invoking low-level CAD operations.
+Configuration names should end in `_depth`, `_width`, or `_wall_thickness` where applicable so the combination tests can create representative values. If a new type is added, please add it to the combination tests. Validate constraints such as positive dimensions, wall thickness relative to radius, and the combined end length before invoking low-level CAD operations.
 
-Add useful presets to `FOLLOWER_DEFINITIONS` when the dimensions represent a known follower.
-
-## Web Interface Changes
-
-- Use the element wrappers in [web_core.py](src/realkey/web_core.py) for common enabled, hidden, active, value, and unit behavior.
-- Route status text through `set_info()` and model overlays through `set_model_overlay_text()`.
-- Keep Generate availability derived from worker, validation, and generation state.
-- Keep download availability derived from the blobs for the model currently displayed.
-- Escape user-controlled text before assigning HTML.
-- Preserve responsive viewport fitting when changing `index.html`, `main.css`, or `model_view.js`.
-
-The repository currently has no browser automation, so manually verify worker loading, failed and successful generation, resizing, downloads, dialogs, sharing, and mobile layout after frontend changes.
-
-## Code Quality
-
-- Preserve typed registries and public return annotations.
-- Prefer idiomatic truth-value checks and specific exception handling.
-- Keep imports consistently grouped as standard library, third-party packages, and local modules.
-- Preserve unrelated working-tree changes and avoid committing generated geometry or build artifacts.
+Add useful presets to `FOLLOWER_DEFINITIONS` when the dimensions represent a possibly reusable follower.
