@@ -10,8 +10,8 @@ realkey is a Python project designed to generate keys and other locksport tools.
 - Generate plug followers using a library of possible follower ends.
 - The browser application shows a preview of the generated model.
 - Models can be downloaded as STL or STEP files directly.
-- Share generated keys and followers with others via generatable links
-- Generation is local to the browser when used as a browser application
+- Share generated keys and followers with others via generatable links.
+- Generation is handled entirely within the browser, no heavy server is required.
 
 ## Python Library
 
